@@ -71,8 +71,6 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: main
-          head: HEAD
 
   # -------------------------------------------------------------------------
   # Deploy Job
