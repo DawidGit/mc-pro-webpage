@@ -1,0 +1,116 @@
+# =============================================================================
+# Docker Compose - Summit Commercial Construction Website
+# Production deployment configuration
+# =============================================================================
+services:
+  # ---------------------------------------------------------------------------
+  # Main Website Service
+  # ---------------------------------------------------------------------------
+  website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: summit-website
+    restart: unless-stopped
+    
+    # Environment variables
+    environment:
+      - NODE_ENV=production
+      - NGINX_WORKER_PROCESSES=auto
+      - NGINX_WORKER_CONNECTIONS=1024
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service_name,environment"
+    
+    # Networks
+    networks:
+      - summit-network
+    
+    # Expose port (for reverse proxy integration)
+    expose:
+      - "8080"
+    
+    # Publish port to host for local browser access
+    ports:
+      - "8080:8080"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ---------------------------------------------------------------------------
+  # Optional: Nginx Reverse Proxy (for standalone deployment)
+  # Uncomment this section if not using external reverse proxy
+  # ---------------------------------------------------------------------------
+  # reverse-proxy:
+  #   image: nginx:1.25-alpine-slim
+  #   container_name: summit-reverse-proxy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx-reverse-proxy.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/nginx/ssl:ro
+  #     - certbot-data:/etc/letsencrypt
+  #     - certbot-www:/var/www/certbot
+  #   depends_on:
+  #     - website
+  #   networks:
+  #     - summit-network
+  #   command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  # ---------------------------------------------------------------------------
+  # Optional: Certbot for Let's Encrypt (uncomment with reverse-proxy)
+  # ---------------------------------------------------------------------------
+  # certbot:
+  #   image: certbot/certbot:latest
+  #   container_name: summit-certbot
+  #   restart: unless-stopped
+  #   volumes:
+  #     - certbot-data:/etc/letsencrypt
+  #     - certbot-www:/var/www/certbot
+  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+  #   networks:
+  #     - summit-network
+
+# ---------------------------------------------------------------------------
+# Networks
+# ---------------------------------------------------------------------------
+networks:
+  summit-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ---------------------------------------------------------------------------
+# Volumes (for Certbot - uncomment if using Let's Encrypt)
+# ---------------------------------------------------------------------------
+# volumes:
+#   certbot-data:
+#   certbot-www:

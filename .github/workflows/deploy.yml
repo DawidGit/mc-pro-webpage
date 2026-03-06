@@ -1,0 +1,212 @@
+# =============================================================================
+# GitHub Actions Workflow - Deploy to VPS
+# Summit Commercial Construction Website
+# =============================================================================
+
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  VPS_HOST: ${{ secrets.VPS_HOST }}
+  VPS_USER: ${{ secrets.VPS_USER }}
+  VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Build & Test Job
+  # -------------------------------------------------------------------------
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linter
+        run: npm run lint
+        continue-on-error: true
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+          retention-days: 1
+
+  # -------------------------------------------------------------------------
+  # Security Scan Job
+  # -------------------------------------------------------------------------
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+      
+      - name: Scan for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+
+  # -------------------------------------------------------------------------
+  # Deploy Job
+  # -------------------------------------------------------------------------
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: [build, security]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+      
+      - name: Add VPS to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to VPS
+        run: |
+          echo "Starting deployment to ${{ secrets.VPS_HOST }}..."
+          
+          # Create deployment script
+          cat > deploy.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          
+          APP_DIR="/home/${{ secrets.VPS_USER }}/apps/summit-website"
+          BACKUP_DIR="/home/${{ secrets.VPS_USER }}/backups/$(date +%Y%m%d_%H%M%S)"
+          
+          echo "Creating backup..."
+          mkdir -p $BACKUP_DIR
+          if [ -d "$APP_DIR" ]; then
+            sudo cp -r $APP_DIR $BACKUP_DIR/ 2>/dev/null || true
+          fi
+          
+          echo "Ensuring directory structure..."
+          mkdir -p $APP_DIR
+          
+          echo "Deployment complete!"
+          EOF
+          
+          chmod +x deploy.sh
+          
+          # Copy files to VPS
+          rsync -avz --delete \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            --exclude='dist' \
+            --exclude='.env' \
+            --exclude='*.log' \
+            ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/${{ secrets.VPS_USER }}/apps/summit-website/
+          
+          # Execute deployment commands
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'DEPLOY'
+            cd /home/${{ secrets.VPS_USER }}/apps/summit-website
+            
+            echo "Building and starting containers..."
+            docker compose down
+            docker compose up -d --build
+            
+            echo "Waiting for container to be healthy..."
+            sleep 10
+            
+            echo "Checking health endpoint..."
+            if curl -f http://localhost:8080/healthz; then
+              echo "Deployment successful!"
+            else
+              echo "Health check failed!"
+              docker compose logs --tail=50
+              exit 1
+            fi
+            
+            echo "Cleaning up old Docker images..."
+            docker system prune -f
+          DEPLOY
+      
+      - name: Verify deployment
+        run: |
+          echo "Verifying deployment..."
+          sleep 5
+          curl -f http://${{ secrets.VPS_HOST }}:8080/healthz || exit 1
+          echo "Deployment verified successfully!"
+      
+      - name: Notify on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "❌ Deployment failed for Summit Commercial Website",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Deployment Failed*\nBranch: ${{ github.ref }}\nCommit: ${{ github.sha }}\nAuthor: ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+  # -------------------------------------------------------------------------
+  # Smoke Test Job
+  # -------------------------------------------------------------------------
+  smoke-test:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    needs: deploy
+    
+    steps:
+      - name: Wait for deployment
+        run: sleep 30
+      
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          
+          # Test main page
+          curl -f -o /dev/null -s -w "Main page: %{http_code}\n" http://${{ secrets.VPS_HOST }}:8080/
+          
+          # Test health endpoint
+          curl -f -s http://${{ secrets.VPS_HOST }}:8080/healthz
+          
+          # Test static assets
+          curl -f -o /dev/null -s -w "CSS: %{http_code}\n" http://${{ secrets.VPS_HOST }}:8080/assets/index.css || true
+          
+          echo "Smoke tests completed!"
