@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { heroConfig } from '../config';
@@ -10,6 +10,7 @@ export function Hero() {
   const textRef = useRef<HTMLDivElement>(null);
   const modelRef = useRef<HTMLDivElement>(null);
   const overlayTextRef = useRef<HTMLDivElement>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isConstructionHero = heroConfig.heroImage.endsWith('/hero-construction2.png');
   const isBuildWithUsText = heroConfig.backgroundText === 'Build with us';
   const isTrustedContractorText = heroConfig.overlayText === 'Illinois Trusted General Contractor Since 2008';
@@ -85,10 +86,10 @@ export function Hero() {
       {/* Layer 2: Big Text */}
       <div
         ref={textRef}
-        className="absolute inset-0 flex items-start justify-center pt-20 md:pt-24 lg:pt-28 z-[4] will-change-transform"
+        className="absolute inset-0 flex items-start justify-center pt-28 md:pt-24 lg:pt-28 z-[4] will-change-transform"
       >
         <h1
-          className="px-4 text-center text-[11vw] md:text-[9vw] lg:text-[8vw] font-sans font-extrabold text-white/35 tracking-tighter leading-none select-none"
+          className="px-4 text-center text-[13vw] md:text-[9vw] lg:text-[8vw] font-sans font-extrabold text-white/35 tracking-tighter leading-[4] md:leading-none select-none"
           style={isBuildWithUsText ? { color: 'rgb(13 19 16 / 0.85)' } : undefined}
         >
           {heroConfig.backgroundText}
@@ -117,7 +118,7 @@ export function Hero() {
       {heroConfig.overlayText && (
         <div
           ref={overlayTextRef}
-          className="absolute bottom-[24%] left-1/2 -translate-x-1/2 z-30 will-change-transform px-4"
+          className="absolute bottom-[calc(12%+122px)] md:bottom-[24%] left-1/2 -translate-x-1/2 z-30 will-change-transform px-4"
         >
           <p
             className={
@@ -135,13 +136,13 @@ export function Hero() {
       <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2 z-30 flex flex-col sm:flex-row items-center gap-4 px-4">
         <a
           href="#projects"
-          className="px-7 py-3 bg-white text-forest-dark font-semibold rounded-full shadow-lg hover:bg-white/90 transition-colors duration-300"
+          className="px-7 py-3 bg-white text-forest-dark font-semibold rounded-full shadow-lg hover:bg-white/90 transition-colors duration-300 whitespace-nowrap"
         >
           View our work
         </a>
         <a
           href="#contact"
-          className="px-7 py-3 border border-white text-white font-semibold rounded-full hover:bg-white hover:text-forest-dark transition-colors duration-300"
+          className="px-7 py-3 border border-white text-white font-semibold rounded-full hover:bg-white hover:text-forest-dark transition-colors duration-300 whitespace-nowrap"
         >
           Talk to an expert
         </a>
@@ -164,11 +165,32 @@ export function Hero() {
             ))}
           </div>
         )}
-        <button className="md:hidden text-white">
+        <button
+          type="button"
+          className="md:hidden fixed top-8 right-6 z-50 text-white"
+          aria-label="Toggle navigation menu"
+          aria-expanded={isMobileMenuOpen}
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+        >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
+
+        {heroConfig.navLinks.length > 0 && isMobileMenuOpen && (
+          <div className="absolute top-full left-6 right-6 mt-3 md:hidden rounded-lg border border-white/15 bg-forest-dark/70 backdrop-blur-sm p-4 flex flex-col gap-3">
+            {heroConfig.navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-center text-white/90 font-body text-sm py-1.5 hover:text-white transition-colors duration-300"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        )}
       </nav>
     </section>
   );
