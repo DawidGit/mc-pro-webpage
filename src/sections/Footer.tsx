@@ -52,7 +52,7 @@ export function Footer() {
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         {/* Footer Content */}
-        <div ref={contentRef} className="opacity-0">
+        <div ref={contentRef} className="opacity-0 text-center md:text-left">
           <div className="mb-6 md:mb-8 grid md:grid-cols-3">
             <img
               src={footerLogoSrc}
@@ -64,7 +64,7 @@ export function Footer() {
 
           <div className="grid md:grid-cols-3 gap-12 md:gap-8 mb-16">
             {/* Contact Info */}
-            <div>
+            <div className="flex flex-col items-center md:items-start">
               {footerConfig.contactLabel && (
                 <p className="text-[rgb(26_26_26)] text-sm font-body uppercase tracking-widest mb-4">
                   {footerConfig.contactLabel}
@@ -87,13 +87,13 @@ export function Footer() {
 
             {/* Navigation */}
             {footerConfig.navLinks.length > 0 && (
-              <div>
+              <div className="flex flex-col items-center md:items-start">
                 {footerConfig.navigationLabel && (
                   <p className="text-[rgb(26_26_26)] text-sm font-body uppercase tracking-widest mb-4">
                     {footerConfig.navigationLabel}
                   </p>
                 )}
-                <nav className="space-y-3">
+                <nav className="space-y-3 flex flex-col items-center md:items-start">
                   {footerConfig.navLinks.map((link) => (
                     <a
                       key={link.label}
@@ -108,14 +108,14 @@ export function Footer() {
             )}
 
             {/* Social Links */}
-            <div>
+            <div className="flex flex-col items-center md:items-start">
               {footerConfig.socialLabel && (
                 <p className="text-[rgb(26_26_26)] text-sm font-body uppercase tracking-widest mb-4">
                   {footerConfig.socialLabel}
                 </p>
               )}
               {footerConfig.socialLinks.length > 0 && (
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center md:justify-start gap-4">
                   {footerConfig.socialLinks.map((social) => {
                     const Icon = iconMap[social.iconName] || Mail;
                     return (
@@ -145,7 +145,7 @@ export function Footer() {
               {footerConfig.copyright || `\u00A9 ${new Date().getFullYear()} All rights reserved.`}
             </p>
             {footerConfig.bottomLinks.length > 0 && (
-              <div className="flex items-center gap-6 text-[rgb(26_26_26)] font-body text-sm">
+              <div className="flex items-center justify-center gap-6 text-[rgb(26_26_26)] font-body text-sm">
                 {footerConfig.bottomLinks.map((link) => (
                   <a key={link.label} href={link.href} className="hover:text-[rgb(26_26_26)] transition-colors duration-300">
                     {link.label}

@@ -279,7 +279,7 @@ export function WhyChooseMe() {
           {whyChooseMeConfig.stats.length > 0 && (
             <div
               ref={statsRef}
-              className="feature-card-stats opacity-0 bg-offwhite rounded-lg p-8 md:p-10 flex flex-col justify-between"
+              className="feature-card-stats opacity-0 bg-offwhite rounded-lg p-8 md:p-10 flex flex-col justify-between text-center md:text-left"
             >
               <div>
                 {whyChooseMeConfig.statsLabel && (
@@ -289,7 +289,7 @@ export function WhyChooseMe() {
                 )}
                 <div className="space-y-8">
                   {whyChooseMeConfig.stats.map((stat, index) => (
-                    <div key={index} className="border-b border-softblack/10 pb-6 last:border-0">
+                    <div key={index} className="border-b border-softblack/10 pb-6 last:border-0 flex flex-col items-center md:items-start">
                       <p className="text-4xl md:text-5xl font-sans font-bold text-softblack tracking-tight">
                         <Counter
                           end={stat.value}
