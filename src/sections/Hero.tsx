@@ -178,18 +178,26 @@ export function Hero() {
         </button>
 
         {heroConfig.navLinks.length > 0 && isMobileMenuOpen && (
-          <div className="absolute top-full left-6 right-6 mt-3 md:hidden rounded-lg border border-white/15 bg-forest-dark/70 backdrop-blur-sm p-4 flex flex-col gap-3">
-            {heroConfig.navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-center text-white/90 font-body text-sm py-1.5 hover:text-white transition-colors duration-300"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
+          <>
+            <button
+              type="button"
+              aria-label="Close navigation menu"
+              className="fixed inset-0 z-40 md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <div className="fixed top-20 left-6 right-6 md:hidden rounded-lg border border-white/15 bg-forest-dark/70 backdrop-blur-sm p-4 flex flex-col gap-3 z-50">
+              {heroConfig.navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-center text-white/90 font-body text-sm py-1.5 hover:text-white transition-colors duration-300"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </>
         )}
       </nav>
     </section>

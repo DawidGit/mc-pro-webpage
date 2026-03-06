@@ -319,16 +319,16 @@ export function WhyChooseMe() {
                 loading="lazy"
               />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-forest-dark/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-forest-dark/85 md:from-forest-dark/60 via-forest-dark/35 md:via-transparent to-transparent" />
             {(whyChooseMeConfig.wideTitle || whyChooseMeConfig.wideDescription) && (
               <div className="wide-text-overlay absolute bottom-8 left-8 md:bottom-12 md:left-12 max-w-md opacity-0">
                 {whyChooseMeConfig.wideTitle && (
-                  <p className="text-white/90 font-sans font-bold text-2xl md:text-3xl mb-3">
+                  <p className="text-white font-sans font-bold text-2xl md:text-3xl mb-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.65)]">
                     {whyChooseMeConfig.wideTitle}
                   </p>
                 )}
                 {whyChooseMeConfig.wideDescription && (
-                  <p className="text-white/70 font-body text-sm md:text-base">
+                  <p className="text-white/90 md:text-white/70 font-body text-sm md:text-base drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
                     {whyChooseMeConfig.wideDescription}
                   </p>
                 )}
