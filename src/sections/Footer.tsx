@@ -17,10 +17,11 @@ export function Footer() {
   const footerRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const footerLogoSrc = `${import.meta.env.BASE_URL}mc-pro-logo-footer.png`;
-
-  if (!footerConfig.email && footerConfig.navLinks.length === 0) return null;
+  const hasFooterContent = Boolean(footerConfig.email) || footerConfig.navLinks.length > 0;
 
   useEffect(() => {
+    if (!hasFooterContent) return;
+
     const ctx = gsap.context(() => {
       // Content — fade up
       ScrollTrigger.create({
@@ -38,7 +39,9 @@ export function Footer() {
     }, footerRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [hasFooterContent]);
+
+  if (!hasFooterContent) return null;
 
   return (
     <footer

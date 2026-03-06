@@ -24,10 +24,11 @@ export function Contact() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  if (!contactConfig.titleRegular) return null;
+  const hasContactContent = Boolean(contactConfig.titleRegular);
 
   useEffect(() => {
+    if (!hasContactContent) return;
+
     const ctx = gsap.context(() => {
       // Heading animation
       ScrollTrigger.create({
@@ -68,7 +69,9 @@ export function Contact() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [hasContactContent]);
+
+  if (!hasContactContent) return null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

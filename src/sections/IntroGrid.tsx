@@ -25,10 +25,14 @@ export function IntroGrid() {
   const titleLine2Ref = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-
-  if (!introGridConfig.titleLine1 && !introGridConfig.titleLine2 && introGridConfig.portfolioImages.length === 0) return null;
+  const hasIntroGridContent =
+    Boolean(introGridConfig.titleLine1) ||
+    Boolean(introGridConfig.titleLine2) ||
+    introGridConfig.portfolioImages.length > 0;
 
   useEffect(() => {
+    if (!hasIntroGridContent) return;
+
     const ctx = gsap.context(() => {
       // ── Title: mask-reveal per line ──
       const titleWrap = titleLine1Ref.current?.parentElement?.parentElement;
@@ -133,7 +137,9 @@ export function IntroGrid() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [hasIntroGridContent]);
+
+  if (!hasIntroGridContent) return null;
 
   return (
     <section

@@ -17,10 +17,11 @@ export function Services() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-
-  if (!servicesConfig.titleLine1 && servicesConfig.services.length === 0) return null;
+  const hasServicesContent = Boolean(servicesConfig.titleLine1) || servicesConfig.services.length > 0;
 
   useEffect(() => {
+    if (!hasServicesContent) return;
+
     const ctx = gsap.context(() => {
       // Heading — slide up
       ScrollTrigger.create({
@@ -61,7 +62,9 @@ export function Services() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [hasServicesContent]);
+
+  if (!hasServicesContent) return null;
 
   return (
     <section

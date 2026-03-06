@@ -14,10 +14,11 @@ export function Hero() {
   const isBuildWithUsText = heroConfig.backgroundText === 'Build with us';
   const isTrustedContractorText = heroConfig.overlayText === 'Illinois Trusted General Contractor Since 2008';
   const navLogoSrc = `${import.meta.env.BASE_URL}mc-pro-logo.png`;
-
-  if (!heroConfig.backgroundText && !heroConfig.heroImage && heroConfig.navLinks.length === 0) return null;
+  const hasHeroContent = Boolean(heroConfig.backgroundText) || Boolean(heroConfig.heroImage) || heroConfig.navLinks.length > 0;
 
   useEffect(() => {
+    if (!hasHeroContent) return;
+
     const ctx = gsap.context(() => {
       // Store ScrollTrigger instances for cleanup
       const triggers: ScrollTrigger[] = [];
@@ -71,7 +72,9 @@ export function Hero() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [hasHeroContent]);
+
+  if (!hasHeroContent) return null;
 
   return (
     <section
