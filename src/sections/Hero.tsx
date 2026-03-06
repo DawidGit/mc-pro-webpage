@@ -5,12 +5,25 @@ import { heroConfig } from '../config';
 
 gsap.registerPlugin(ScrollTrigger);
 
+function isLightColor(color: string) {
+  const values = color.match(/\d+(\.\d+)?/g);
+  if (!values || values.length < 3) return false;
+
+  const r = Number(values[0]);
+  const g = Number(values[1]);
+  const b = Number(values[2]);
+
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return luminance > 0.65;
+}
+
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const modelRef = useRef<HTMLDivElement>(null);
   const overlayTextRef = useRef<HTMLDivElement>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isHamburgerDark, setIsHamburgerDark] = useState(false);
   const isConstructionHero = heroConfig.heroImage.endsWith('/hero-construction2.png');
   const isBuildWithUsText = heroConfig.backgroundText === 'Build with us';
   const isTrustedContractorText = heroConfig.overlayText === 'Illinois Trusted General Contractor Since 2008';
@@ -74,6 +87,37 @@ export function Hero() {
 
     return () => ctx.revert();
   }, [hasHeroContent]);
+
+  useEffect(() => {
+    const updateHamburgerColor = () => {
+      const sampleY = Math.min(window.innerHeight - 1, 56);
+      const sections = Array.from(document.querySelectorAll('section, footer')) as HTMLElement[];
+      const activeSection = sections.find((section) => {
+        const rect = section.getBoundingClientRect();
+        return rect.top <= sampleY && rect.bottom >= sampleY;
+      });
+
+      if (!activeSection) return;
+
+      if (activeSection === sectionRef.current) {
+        setIsHamburgerDark(false);
+        return;
+      }
+
+      const bgColor = window.getComputedStyle(activeSection).backgroundColor;
+      const shouldUseDarkColor = isLightColor(bgColor);
+      setIsHamburgerDark((prev) => (prev === shouldUseDarkColor ? prev : shouldUseDarkColor));
+    };
+
+    updateHamburgerColor();
+    window.addEventListener('scroll', updateHamburgerColor, { passive: true });
+    window.addEventListener('resize', updateHamburgerColor);
+
+    return () => {
+      window.removeEventListener('scroll', updateHamburgerColor);
+      window.removeEventListener('resize', updateHamburgerColor);
+    };
+  }, []);
 
   if (!hasHeroContent) return null;
 
@@ -167,7 +211,9 @@ export function Hero() {
         )}
         <button
           type="button"
-          className="md:hidden fixed top-8 right-6 z-50 text-white"
+          className={`md:hidden fixed top-8 right-6 z-50 transition-colors duration-300 ${
+            isHamburgerDark ? 'text-softblack' : 'text-white'
+          }`}
           aria-label="Toggle navigation menu"
           aria-expanded={isMobileMenuOpen}
           onClick={() => setIsMobileMenuOpen((prev) => !prev)}
