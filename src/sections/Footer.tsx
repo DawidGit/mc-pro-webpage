@@ -46,8 +46,8 @@ export function Footer() {
   return (
     <footer
       ref={footerRef}
-      id="contact"
-      className="relative w-full bg-white pt-24 md:pt-32 pb-8 overflow-hidden"
+      id="footer"
+      className="relative w-full bg-white pt-24 md:pt-32 pb-8 overflow-hidden scroll-mt-24"
       style={{ color: 'rgb(26 26 26)' }}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">

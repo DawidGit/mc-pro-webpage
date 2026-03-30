@@ -1,29 +1,46 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Camera, Diamond, Users, Sparkles, type LucideIcon } from 'lucide-react';
+import {
+  Building2,
+  Camera,
+  ClipboardList,
+  Diamond,
+  Home,
+  PenLine,
+  Sparkles,
+  Users,
+  Wrench,
+  type LucideIcon,
+} from 'lucide-react';
 import { servicesConfig } from '../config';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const iconMap: Record<string, LucideIcon> = {
+  Building2,
   Camera,
+  ClipboardList,
   Diamond,
-  Users,
+  Home,
+  PenLine,
   Sparkles,
+  Users,
+  Wrench,
 };
 
 export function Services() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const hasServicesContent = Boolean(servicesConfig.titleLine1) || servicesConfig.services.length > 0;
+  const hasServicesContent =
+    Boolean(servicesConfig.titleLine1 || servicesConfig.titleLine2Italic) ||
+    servicesConfig.services.length > 0;
 
   useEffect(() => {
     if (!hasServicesContent) return;
 
     const ctx = gsap.context(() => {
-      // Heading — slide up
       ScrollTrigger.create({
         trigger: headingRef.current,
         start: 'top 85%',
@@ -37,7 +54,6 @@ export function Services() {
         once: true,
       });
 
-      // Service cards — staggered slide up
       const cards = gridRef.current?.querySelectorAll('.service-card');
       if (cards) {
         ScrollTrigger.create({
@@ -66,78 +82,90 @@ export function Services() {
 
   if (!hasServicesContent) return null;
 
+  const serviceCount = servicesConfig.services.length;
+  const gridFillTwoCol = serviceCount % 2 === 0 ? 0 : 1;
+  const gridFillThreeCol = (3 - (serviceCount % 3)) % 3;
+
   return (
     <section
       ref={sectionRef}
       id="services"
-      className="relative w-full py-24 md:py-32 bg-forest-dark"
+      className="relative w-full py-24 md:py-32 bg-forest-dark scroll-mt-24"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-start">
-          {/* Left Column - Heading */}
-          <div ref={headingRef} className="opacity-0">
-            {servicesConfig.subtitle && (
-              <p className="text-white/50 text-sm font-body uppercase tracking-widest mb-4">
-                {servicesConfig.subtitle}
-              </p>
+        <div ref={headingRef} className="opacity-0 mb-12 md:mb-16 lg:mb-20">
+          {servicesConfig.subtitle && (
+            <p className="text-white/50 text-sm font-body uppercase tracking-widest mb-4">
+              {servicesConfig.subtitle}
+            </p>
+          )}
+          <h2 className="text-3xl md:text-4xl lg:text-5xl leading-tight max-w-4xl">
+            {servicesConfig.titleLine1 && (
+              <span className="font-sans font-bold text-white tracking-tight">
+                {servicesConfig.titleLine1}
+              </span>
             )}
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-sans font-bold text-white tracking-tight leading-tight">
-              {servicesConfig.titleLine1}
-              <br />
+            {servicesConfig.titleLine1 && servicesConfig.titleLine2Italic ? ' ' : null}
+            {servicesConfig.titleLine2Italic && (
               <span className="font-serif italic font-normal text-white/80">
                 {servicesConfig.titleLine2Italic}
               </span>
-            </h2>
-            {servicesConfig.description && (
-              <p className="mt-6 text-white/60 font-body text-base md:text-lg max-w-md leading-relaxed">
-                {servicesConfig.description}
-              </p>
             )}
-          </div>
+          </h2>
+          {servicesConfig.description && (
+            <p className="mt-6 text-white/60 font-body text-base md:text-lg max-w-3xl leading-relaxed">
+              {servicesConfig.description}
+            </p>
+          )}
+        </div>
 
-          {/* Right Column - Services Grid */}
-          <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-white/10">
-            {servicesConfig.services.map((service, index) => {
-              const Icon = iconMap[service.iconName] || Camera;
-              return (
-                <div
-                  key={index}
-                  className="service-card group bg-forest-dark p-6 md:p-8 opacity-0 transition-all duration-500 hover:bg-forest-mid cursor-pointer"
-                >
-                  <div className="mb-4">
-                    <Icon className="w-8 h-8 text-white/70 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
-                  </div>
-                  <h3 className="text-lg md:text-xl font-sans font-semibold text-white mb-3 group-hover:translate-x-1 transition-transform duration-300">
-                    {service.title}
-                  </h3>
-                  <p className="text-sm text-white/50 font-body leading-relaxed group-hover:text-white/70 transition-colors duration-300">
-                    {service.description}
-                  </p>
-
-                  {/* Arrow indicator */}
-                  <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <svg
-                      className="w-5 h-5 text-white/60"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M17 8l4 4m0 0l-4 4m4-4H3"
-                      />
-                    </svg>
-                  </div>
+        <div
+          ref={gridRef}
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-px bg-white/10 w-full"
+        >
+          {servicesConfig.services.map((service, index) => {
+            const Icon = iconMap[service.iconName] || Camera;
+            return (
+              <div
+                key={index}
+                className="service-card group bg-forest-dark p-6 md:p-8 opacity-0 transition-all duration-500 hover:bg-forest-mid cursor-pointer h-full"
+              >
+                <div className="mb-4">
+                  <Icon className="w-8 h-8 text-white/70 group-hover:text-white transition-colors duration-300" strokeWidth={1.5} />
                 </div>
-              );
-            })}
-          </div>
+                <h3 className="text-lg md:text-xl font-sans font-semibold text-white mb-3 group-hover:translate-x-1 transition-transform duration-300">
+                  {service.title}
+                </h3>
+                <p className="text-sm text-white/50 font-body leading-relaxed group-hover:text-white/70 transition-colors duration-300">
+                  {service.description}
+                </p>
+                {service.bullets && service.bullets.length > 0 && (
+                  <ul className="mt-4 space-y-2 text-sm text-white/45 font-body leading-snug group-hover:text-white/65 transition-colors duration-300 list-disc pl-4 marker:text-white/35">
+                    {service.bullets.map((item, bulletIndex) => (
+                      <li key={`${index}-${bulletIndex}`}>{item}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
+          {Array.from({ length: gridFillTwoCol }).map((_, i) => (
+            <div
+              key={`grid-pad-2-${i}`}
+              className="hidden sm:block xl:hidden bg-forest-dark"
+              aria-hidden
+            />
+          ))}
+          {Array.from({ length: gridFillThreeCol }).map((_, i) => (
+            <div
+              key={`grid-pad-3-${i}`}
+              className="hidden xl:block bg-forest-dark"
+              aria-hidden
+            />
+          ))}
         </div>
       </div>
 
-      {/* Decorative element */}
       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
     </section>
   );

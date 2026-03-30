@@ -50,7 +50,12 @@ export interface PortfolioImage {
 export interface IntroGridConfig {
   titleLine1: string;
   titleLine2: string;
+  descriptionHeading: string;
   description: string;
+  /** When set and there are more paragraphs, only this many show until expanded. Omit to always show full text. */
+  descriptionCollapsedParagraphCount?: number;
+  descriptionReadMoreLabel?: string;
+  descriptionReadLessLabel?: string;
   portfolioImages: PortfolioImage[];
   accentText: string;
 }
@@ -58,7 +63,21 @@ export interface IntroGridConfig {
 export const introGridConfig: IntroGridConfig = {
   titleLine1: "Building Excellence",
   titleLine2: "Across Illinois",
-  description: "From Chicago to Springfield, we deliver commercial construction projects that stand the test of time. Our commitment to quality craftsmanship, on-time delivery, and transparent communication has made us the preferred general contractor for corporations, retail chains, and property management companies throughout the Midwest.",
+  descriptionHeading: "Our Mission",
+  description: `At Mc Pro, our mission is to deliver comprehensive, high-quality construction services that combine over two decades of experience with craftsmanship, reliability, and innovation. We are dedicated to creating spaces that are not only visually impactful, but also functional, durable, and built to stand the test of time.
+
+From our beginnings in residential remodeling and house transformations, we developed a deep, hands-on understanding of every stage of the construction process. Over the years, we have mastered a wide range of trades — including masonry, structural and mechanical work, interior design, tile installation, countertops, and finishing services such as painting — allowing us to provide truly integrated solutions under one roof.
+
+Today, we bring that same foundation of knowledge and attention to detail into the commercial sector, delivering high-quality projects for restaurants, hotels, office spaces, and other business environments. Our mission is to simplify the construction process for our clients by acting as a single, reliable partner — managing every aspect of the project from initial concept and planning, through execution, to final delivery.
+
+Our slogan, "Quality on Time," is more than just words — it defines how we operate every day. At Mc Pro, we truly stand behind it. We are committed to meeting deadlines without compromising craftsmanship, ensuring that every project is completed efficiently, professionally, and to the highest standard. We take pride in delivering exactly what we promise, when we promise it.
+
+We are committed to maintaining the highest standards of workmanship, clear communication, and accountability at every stage. We believe that strong relationships, transparency, and consistency are the key to successful projects and long-term partnerships.
+
+At Mc Pro, we don't just build structures — we build spaces that support businesses, enhance everyday living, and reflect the vision of our clients. Every project we take on is approached with precision, professionalism, and pride.`,
+  descriptionCollapsedParagraphCount: 2,
+  descriptionReadMoreLabel: "Read more",
+  descriptionReadLessLabel: "Show less",
   portfolioImages: [
     { src: assetPath("/project-retail-1.jpg"), alt: "Modern retail storefront construction completed in Naperville, Illinois" },
     { src: assetPath("/project-office-1.jpg"), alt: "Corporate office interior renovation in downtown Chicago" },
@@ -161,6 +180,8 @@ export interface ServiceItem {
   iconName: string;
   title: string;
   description: string;
+  /** Optional bullet list shown under the description */
+  bullets?: string[];
 }
 
 export interface ServicesConfig {
@@ -173,29 +194,70 @@ export interface ServicesConfig {
 
 export const servicesConfig: ServicesConfig = {
   subtitle: "What We Offer",
-  titleLine1: "Commercial",
-  titleLine2Italic: "Construction Services",
-  description: "Full-service general contracting for commercial projects of any scale. From initial planning to final walkthrough, we manage every detail with precision and professionalism.",
+  titleLine1: "Our",
+  titleLine2Italic: "Services",
+  description: "At Mc Pro, we provide full-service construction solutions — from concept to completion. With expertise across multiple trades, we deliver seamless, high-quality results for both residential and commercial projects.",
   services: [
     {
+      iconName: "Home",
+      title: "Residential Construction & Remodeling",
+      description:
+        "We started in residential remodeling, and it remains a strong part of our foundation. Whether it's a full home renovation or targeted upgrades, we transform spaces to match your vision and lifestyle.",
+      bullets: [
+        "Full home remodeling",
+        "Kitchen and bathroom renovations",
+        "House flipping & investment properties",
+        "Interior and exterior upgrades",
+      ],
+    },
+    {
       iconName: "Building2",
+      title: "Commercial Construction",
+      description:
+        "Today, we specialize in professional commercial build-outs and renovations, delivering functional and modern spaces for businesses.",
+      bullets: [
+        "Restaurants & hospitality spaces",
+        "Hotels & multi-unit properties",
+        "Office build-outs & renovations",
+        "Retail and service locations",
+      ],
+    },
+    {
+      iconName: "PenLine",
+      title: "Design & Planning",
+      description:
+        "We support projects from the very beginning, helping clients plan and design spaces that are both practical and visually strong.",
+      bullets: [
+        "Space planning & layout",
+        "Interior design support",
+        "Material selection guidance",
+        "Project consultation",
+      ],
+    },
+    {
+      iconName: "ClipboardList",
       title: "General Contracting",
-      description: "Complete project management including permitting, subcontractor coordination, quality control, and on-site supervision for seamless project delivery.",
+      description:
+        "As a one-stop shop, we manage every phase of construction, ensuring smooth coordination, efficiency, and on-time delivery.",
+      bullets: [
+        "Full project management",
+        "Scheduling & coordination",
+        "Permit assistance",
+        "Quality control & supervision",
+      ],
     },
     {
-      iconName: "Store",
-      title: "Retail Buildouts",
-      description: "Fast-track construction for retail chains, franchise locations, and shopping centers with minimal disruption to surrounding businesses.",
-    },
-    {
-      iconName: "Briefcase",
-      title: "Office Renovations",
-      description: "Modern workspace transformations including open floor plans, conference facilities, and technology infrastructure for today's hybrid work environments.",
-    },
-    {
-      iconName: "Factory",
-      title: "Industrial Construction",
-      description: "Warehouses, distribution centers, and manufacturing facilities built to your specifications with attention to workflow efficiency and safety compliance.",
+      iconName: "Wrench",
+      title: "Specialized Trades",
+      description:
+        "Our hands-on experience across trades allows us to deliver consistent quality without relying on multiple outside contractors.",
+      bullets: [
+        "Masonry & structural work",
+        "Mechanical systems",
+        "Tile installation",
+        "Countertops",
+        "Painting & finishing",
+      ],
     },
   ],
 };
@@ -228,12 +290,12 @@ export interface WhyChooseMeConfig {
 }
 
 export const whyChooseMeConfig: WhyChooseMeConfig = {
-  subtitle: "Why Choose Summit",
+  subtitle: "Why Choose Mc Pro",
   titleRegular: "Proven",
   titleItalic: "Excellence",
   statsLabel: "By The Numbers",
   stats: [
-    { value: 16, suffix: "+", label: "Years in Business" },
+    { value: 20, suffix: "+", label: "Years in Business" },
     { value: 350, suffix: "+", label: "Projects Completed" },
     { value: 98, suffix: "%", label: "On-Time Delivery" },
     { value: 50, suffix: "M+", label: "Sq Ft Built" },
@@ -243,13 +305,29 @@ export const whyChooseMeConfig: WhyChooseMeConfig = {
       image: assetPath("/value-safety.jpg"),
       imageAlt: "Construction workers following safety protocols on job site",
       title: "Safety First",
-      description: "Zero lost-time accidents in the past 3 years. Our comprehensive safety program protects workers, clients, and the public on every project.",
+      description:
+        "Zero lost-time accidents in the past 3 years. Our comprehensive safety program protects workers, clients, and the public on every project.",
     },
     {
       image: assetPath("/value-quality.jpg"),
       imageAlt: "Quality craftsmanship detail on finished construction work",
       title: "Uncompromising Quality",
-      description: "Rigorous quality control at every phase. We partner with trusted suppliers and skilled tradespeople to deliver lasting results.",
+      description:
+        "Rigorous quality control at every phase. We partner with trusted suppliers and skilled tradespeople to deliver lasting results.",
+    },
+    {
+      image: assetPath("/project-retail-1.jpg"),
+      imageAlt: "Retail construction storefront",
+      title: "Commercial delivery",
+      description:
+        "Retail and hospitality build-outs completed on schedule with minimal disruption to operations.",
+    },
+    {
+      image: assetPath("/project-office-1.jpg"),
+      imageAlt: "Office interior renovation",
+      title: "Office & tenant work",
+      description:
+        "Modern workspace renovations and tenant improvements tailored to how teams work today.",
     },
   ],
   wideImage: assetPath("/team-wide.jpg"),

@@ -138,7 +138,7 @@ export function FeaturedProjects() {
     <section
       ref={sectionRef}
       id="projects"
-      className="relative w-full py-24 md:py-32 bg-forest-dark"
+      className="relative w-full py-24 md:py-32 bg-forest-dark scroll-mt-24"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         {/* Section Header */}

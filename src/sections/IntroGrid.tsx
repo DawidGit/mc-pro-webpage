@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { introGridConfig } from '../config';
@@ -23,8 +23,36 @@ export function IntroGrid() {
   const sectionRef = useRef<HTMLElement>(null);
   const titleLine1Ref = useRef<HTMLDivElement>(null);
   const titleLine2Ref = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLParagraphElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const descriptionBodyId = useId();
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+
+  const descriptionParagraphs = useMemo(
+    () =>
+      introGridConfig.description
+        .split(/\n\n+/)
+        .map((para) => para.trim())
+        .filter(Boolean),
+    [introGridConfig.description]
+  );
+
+  const collapseN = introGridConfig.descriptionCollapsedParagraphCount;
+  const descriptionIsCollapsible =
+    typeof collapseN === 'number' &&
+    collapseN > 0 &&
+    descriptionParagraphs.length > collapseN;
+
+  const visibleDescriptionParagraphs =
+    !descriptionIsCollapsible || descriptionExpanded
+      ? descriptionParagraphs
+      : descriptionParagraphs.slice(0, collapseN ?? 0);
+
+  const readMoreLabel =
+    introGridConfig.descriptionReadMoreLabel ?? 'Read more';
+  const readLessLabel =
+    introGridConfig.descriptionReadLessLabel ?? 'Show less';
+
   const hasIntroGridContent =
     Boolean(introGridConfig.titleLine1) ||
     Boolean(introGridConfig.titleLine2) ||
@@ -144,41 +172,84 @@ export function IntroGrid() {
   return (
     <section
       ref={sectionRef}
-      id="work"
-      className="relative w-full py-24 md:py-32 bg-white"
+      id="intro"
+      className="relative w-full pt-0 md:pt-1 pb-24 md:pb-32 bg-white scroll-mt-24"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
-        {/* ── Title with split-line mask reveal ── */}
-        <div className="max-w-3xl mx-auto text-center mb-16 md:mb-24">
-          <div className="mb-6">
-            <div className="overflow-hidden">
-              <div
-                ref={titleLine1Ref}
-                className="translate-y-[110%]"
-              >
-                <span className="block text-3xl md:text-4xl lg:text-5xl font-sans font-bold text-softblack tracking-tight">
-                  {introGridConfig.titleLine1}
-                </span>
+        {/* ── Title with split-line mask reveal (narrow); mission text full width like grid below ── */}
+        <div className="mb-16 md:mb-24">
+          <div className="max-w-3xl mx-auto text-center mb-6 md:mb-8">
+            <div className="mb-6">
+              <div className="overflow-hidden">
+                <div
+                  ref={titleLine1Ref}
+                  className="translate-y-[110%]"
+                >
+                  <span className="block text-3xl md:text-4xl lg:text-5xl font-sans font-bold text-softblack tracking-tight">
+                    {introGridConfig.titleLine1}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="overflow-hidden">
-              <div
-                ref={titleLine2Ref}
-                className="translate-y-[110%]"
-              >
-                <span className="block text-3xl md:text-4xl lg:text-5xl font-serif italic font-normal text-softblack/70">
-                  {introGridConfig.titleLine2}
-                </span>
+              <div className="overflow-hidden">
+                <div
+                  ref={titleLine2Ref}
+                  className="translate-y-[110%]"
+                >
+                  <span className="block text-3xl md:text-4xl lg:text-5xl font-serif italic font-normal text-softblack/70">
+                    {introGridConfig.titleLine2}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <p
+          <div
             ref={textRef}
-            className="text-base md:text-lg text-softblack/60 font-body leading-relaxed opacity-0"
+            className="w-full space-y-4 text-left opacity-0"
           >
-            {introGridConfig.description}
-          </p>
+            {introGridConfig.descriptionHeading && (
+              <h3 className="text-center font-sans font-bold text-softblack text-xl md:text-2xl tracking-tight mb-2">
+                {introGridConfig.descriptionHeading}
+              </h3>
+            )}
+            <div className="relative">
+              <div
+                id={descriptionBodyId}
+                className="space-y-4"
+              >
+                {visibleDescriptionParagraphs.map((para, i) => (
+                  <p
+                    key={i}
+                    className="text-base md:text-lg text-softblack/60 font-body leading-relaxed"
+                  >
+                    {para}
+                  </p>
+                ))}
+              </div>
+              {!descriptionExpanded && descriptionIsCollapsible && (
+                <div
+                  className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent"
+                  aria-hidden
+                />
+              )}
+            </div>
+            {descriptionIsCollapsible && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  type="button"
+                  className="text-sm md:text-base font-body font-semibold text-softblack/70 hover:text-softblack underline underline-offset-4 decoration-softblack/30 hover:decoration-softblack transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-softblack/40 rounded-sm"
+                  aria-expanded={descriptionExpanded}
+                  aria-controls={descriptionBodyId}
+                  onClick={() => {
+                    setDescriptionExpanded((prev) => !prev);
+                    requestAnimationFrame(() => ScrollTrigger.refresh());
+                  }}
+                >
+                  {descriptionExpanded ? readLessLabel : readMoreLabel}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── Masonry Grid ── */}

@@ -59,7 +59,8 @@ export function Testimonials() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full py-24 md:py-32 bg-white overflow-hidden"
+      id="testimonials"
+      className="relative w-full py-24 md:py-32 bg-white overflow-hidden scroll-mt-24"
     >
       {/* Section Header */}
       <div className="max-w-7xl mx-auto px-6 md:px-12 mb-16 md:mb-20">
