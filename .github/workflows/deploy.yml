@@ -165,18 +165,6 @@ jobs:
             set -e
             cd "${APP_DIR}"
 
-            # Traefik Host() rule — set GitHub secret TRAEFIK_HOST to your public subdomain
-            if [ -n "${{ secrets.TRAEFIK_HOST }}" ]; then
-              grep -q '^TRAEFIK_HOST=' .env 2>/dev/null \
-                && sed -i 's/^TRAEFIK_HOST=.*/TRAEFIK_HOST=${{ secrets.TRAEFIK_HOST }}/' .env \
-                || echo 'TRAEFIK_HOST=${{ secrets.TRAEFIK_HOST }}' >> .env
-            fi
-
-            if [ ! -f .env ] || ! grep -q '^TRAEFIK_HOST=.\+' .env; then
-              echo "TRAEFIK_HOST is missing. Add GitHub secret TRAEFIK_HOST (e.g. mcpro.example.com)."
-              exit 1
-            fi
-
             echo "Building and starting containers..."
             docker compose down
             docker compose up -d --build
