@@ -1,30 +1,33 @@
 # =============================================================================
-# Docker Compose - Summit Commercial Construction Website
-# Production deployment configuration
+# Docker Compose - MC Pro website (behind existing Traefik on VPS)
 # =============================================================================
+#
+# Requires an external Traefik network (default name: traefik).
+# Set the public hostname Traefik should match, e.g.:
+#   export TRAEFIK_HOST=mcpro.twojadomena.pl
+#   docker compose up -d --build
+#
+# Cloudflare Tunnel / DNS should target Traefik (usually http://127.0.0.1:80),
+# NOT this container's :8080. Traefik routes by Host → this service.
+# =============================================================================
+
 services:
-  # ---------------------------------------------------------------------------
-  # Main Website Service
-  # ---------------------------------------------------------------------------
   website:
     build:
       context: .
       dockerfile: Dockerfile
       target: production
-    container_name: summit-website
+    container_name: mc-pro-website
     restart: unless-stopped
-    
-    # Environment variables
+
     environment:
       - NODE_ENV=production
       - NGINX_WORKER_PROCESSES=auto
       - NGINX_WORKER_CONNECTIONS=1024
-    
-    # Security options
+
     security_opt:
       - no-new-privileges:true
-    
-    # Resource limits
+
     deploy:
       resources:
         limits:
@@ -33,28 +36,39 @@ services:
         reservations:
           cpus: '0.25'
           memory: 128M
-    
-    # Logging configuration
+
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
         labels: "service_name,environment"
-    
-    # Networks
+
+    # Traefik discovers the container on this shared network
     networks:
       - mc-pro-network
-    
-    # Expose port (for reverse proxy integration)
+      - traefik
+
+    # Only expose inside Docker — Traefik reaches :8080 on the container network.
+    # Host publish kept for local/CI health checks on the VPS (curl localhost:8080).
     expose:
       - "8080"
-    
-    # Publish port to host for local browser access
     ports:
       - "8080:8080"
-    
-    # Health check
+
+    labels:
+      - "traefik.enable=true"
+      # Public hostname (must match Cloudflare subdomain Host header)
+      - "traefik.http.routers.mc-pro.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.mc-pro.entrypoints=web"
+      # If your Traefik also has TLS / websecure, uncomment:
+      # - "traefik.http.routers.mc-pro-secure.rule=Host(`${TRAEFIK_HOST}`)"
+      # - "traefik.http.routers.mc-pro-secure.entrypoints=websecure"
+      # - "traefik.http.routers.mc-pro-secure.tls=true"
+      # - "traefik.http.routers.mc-pro-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mc-pro.loadbalancer.server.port=8080"
+      - "traefik.docker.network=traefik"
+
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
       interval: 30s
@@ -62,52 +76,8 @@ services:
       retries: 3
       start_period: 40s
 
-  # ---------------------------------------------------------------------------
-  # Optional: Nginx Reverse Proxy (for standalone deployment)
-  # Uncomment this section if not using external reverse proxy
-  # ---------------------------------------------------------------------------
-  # reverse-proxy:
-  #   image: nginx:1.25-alpine-slim
-  #   container_name: summit-reverse-proxy
-  #   restart: unless-stopped
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx-reverse-proxy.conf:/etc/nginx/nginx.conf:ro
-  #     - ./ssl:/etc/nginx/ssl:ro
-  #     - certbot-data:/etc/letsencrypt
-  #     - certbot-www:/var/www/certbot
-  #   depends_on:
-  #     - website
-  #   networks:
-  #     - mc-pro-network
-  #   command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
-
-  # ---------------------------------------------------------------------------
-  # Optional: Certbot for Let's Encrypt (uncomment with reverse-proxy)
-  # ---------------------------------------------------------------------------
-  # certbot:
-  #   image: certbot/certbot:latest
-  #   container_name: summit-certbot
-  #   restart: unless-stopped
-  #   volumes:
-  #     - certbot-data:/etc/letsencrypt
-  #     - certbot-www:/var/www/certbot
-  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
-  #   networks:
-  #     - mc-pro-network
-
-# ---------------------------------------------------------------------------
-# Networks
-# ---------------------------------------------------------------------------
 networks:
   mc-pro-network:
     driver: bridge
-
-# ---------------------------------------------------------------------------
-# Volumes (for Certbot - uncomment if using Let's Encrypt)
-# ---------------------------------------------------------------------------
-# volumes:
-#   certbot-data:
-#   certbot-www:
+  traefik:
+    external: true
