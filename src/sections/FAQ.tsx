@@ -82,7 +82,8 @@ export function FAQ() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full py-24 md:py-32 bg-forest-dark"
+      id="faq"
+      className="relative w-full py-24 md:py-32 bg-forest-dark scroll-mt-24"
     >
       <div className="max-w-4xl mx-auto px-6 md:px-12">
         {/* Section Header */}

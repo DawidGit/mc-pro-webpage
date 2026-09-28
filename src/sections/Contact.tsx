@@ -215,7 +215,7 @@ export function Contact() {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="Summit Commercial Construction Office Location"
+                  title="MC Pro, INC. office location — 724 Bonded Parkway, Streamwood, IL"
                   className="w-full h-full"
                 />
               </div>
@@ -276,7 +276,7 @@ export function Contact() {
                     type="tel"
                     value={formState.phone}
                     onChange={handleInputChange}
-                    placeholder="(630) 555-0147"
+                    placeholder="(312) 405-0066"
                     className="bg-forest-dark/60 border-white/15 text-white placeholder:text-white/40 focus:border-white/35 focus:ring-white/20"
                   />
                 </div>

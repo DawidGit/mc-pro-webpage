@@ -5,12 +5,40 @@ export interface SiteConfig {
   language: string;
   siteTitle: string;
   siteDescription: string;
+  siteName: string;
+  legalName: string;
+  canonicalUrl: string;
+  ogImage: string;
+  logoUrl: string;
+  keywords: string;
+  streetAddress: string;
+  addressLocality: string;
+  addressRegion: string;
+  postalCode: string;
+  latitude: number;
+  longitude: number;
+  sameAs: string[];
 }
 
 export const siteConfig: SiteConfig = {
   language: "en",
-  siteTitle: "Summit Commercial Construction | Illinois General Contractor",
-  siteDescription: "Premier commercial construction and general contracting services in Illinois. Specializing in retail buildouts, office renovations, and industrial facilities. Licensed, bonded, and committed to excellence.",
+  siteName: "MC Pro, INC.",
+  legalName: "MC Pro, INC.",
+  siteTitle: "MC Pro, INC. | General Contractor & Solid Surface Services in Streamwood, IL",
+  siteDescription:
+    "MC Pro, INC. is a Streamwood, Illinois general contractor offering design-build, pre-construction, construction management, and solid surface services across Chicagoland. Call (312) 405-0066.",
+  canonicalUrl: "https://mcprogc.com",
+  ogImage: "https://mcprogc.com/og-image.jpg",
+  logoUrl: "https://mcprogc.com/logo.png",
+  keywords:
+    "general contractor Streamwood, MC Pro INC, solid surface Streamwood IL, commercial construction Chicago suburbs, design build Illinois, construction management Streamwood, residential remodeling Chicagoland, MCProGC",
+  streetAddress: "724 Bonded Parkway",
+  addressLocality: "Streamwood",
+  addressRegion: "IL",
+  postalCode: "60107",
+  latitude: 42.0275,
+  longitude: -88.1768,
+  sameAs: ["https://mcprogc.com"],
 };
 
 const assetPath = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
@@ -30,7 +58,7 @@ export const heroConfig: HeroConfig = {
   heroImage: assetPath("/hero-construction2.png"),
   heroImageAlt: "High-rise commercial construction with cranes and reinforced concrete structure",
   overlayText: "Illinois Trusted General Contractor Since 2008",
-  brandName: "SUMMIT",
+  brandName: "MC PRO",
   navLinks: [
     { label: "Home", href: "#home" },
     { label: "Projects", href: "#projects" },
@@ -296,7 +324,7 @@ export const whyChooseMeConfig: WhyChooseMeConfig = {
   statsLabel: "By The Numbers",
   stats: [
     { value: 20, suffix: "+", label: "Years in Business" },
-    { value: 350, suffix: "+", label: "Projects Completed" },
+    { value: 150, suffix: "+", label: "Projects Completed" },
     { value: 98, suffix: "%", label: "On-Time Delivery" },
     { value: 50, suffix: "M+", label: "Sq Ft Built" },
   ],
@@ -429,7 +457,8 @@ export const faqConfig: FAQConfig = {
     {
       id: "faq-5",
       question: "What areas of Illinois do you serve?",
-      answer: "We serve the entire state of Illinois with a focus on the Chicago metropolitan area, Rockford, Peoria, Springfield, and surrounding regions. We're equipped to handle projects anywhere in the Midwest.",
+      answer:
+        "MC Pro, INC. is based at 724 Bonded Parkway in Streamwood, Illinois, and serves the Chicago metropolitan area, including Cook and DuPage counties, as well as projects throughout Illinois and the broader Midwest.",
     },
   ],
 };
@@ -461,10 +490,10 @@ export interface FooterConfig {
 }
 
 export const footerConfig: FooterConfig = {
-  logoText: "SUMMIT",
+  logoText: "MC PRO",
   contactLabel: "Get in Touch",
-  email: "info@summitcommercial-il.com",
-  locationText: "2450 Warrenville Road\nSuite 300\nDowners Grove, IL 60515",
+  email: "office@mcprogc.com",
+  locationText: "724 Bonded Parkway\nStreamwood, IL 60107",
   navigationLabel: "Navigation",
   navLinks: [
     { label: "Home", href: "#home" },
@@ -480,8 +509,8 @@ export const footerConfig: FooterConfig = {
     { iconName: "Instagram", href: "https://instagram.com", label: "Instagram" },
     { iconName: "Facebook", href: "https://facebook.com", label: "Facebook" },
   ],
-  tagline: "Building Illinois\nOne Project at a Time",
-  copyright: "© 2024 Summit Commercial Construction. All rights reserved.",
+  tagline: "We develop and build\nthe exceptional",
+  copyright: "© 2026 MC Pro, INC. All rights reserved.",
   bottomLinks: [
     { label: "Privacy Policy", href: "#privacy" },
     { label: "Terms of Service", href: "#terms" },
@@ -512,16 +541,18 @@ export const contactConfig: ContactConfig = {
   subtitle: "Start Your Project",
   titleRegular: "Let's",
   titleItalic: "Connect",
-  description: "Ready to start your commercial construction project? Contact us for a free consultation and estimate. Our team is ready to bring your vision to life.",
-  phone: "(630) 555-0147",
+  description:
+    "Ready to start your construction project with MC Pro, INC. in Streamwood, IL? Call (312) 405-0066 or email office@mcprogc.com for a consultation.",
+  phone: "(312) 405-0066",
   phoneLabel: "Phone",
-  email: "info@summitcommercial-il.com",
+  email: "office@mcprogc.com",
   emailLabel: "Email",
-  address: "2450 Warrenville Road, Suite 300\nDowners Grove, IL 60515",
+  address: "724 Bonded Parkway\nStreamwood, IL 60107",
   addressLabel: "Office",
   hours: "Monday – Friday: 7:00 AM – 5:00 PM\nSaturday: By Appointment",
   hoursLabel: "Hours",
   formTitle: "Request a Consultation",
   formDescription: "Fill out the form below and our team will respond within 24 business hours.",
-  mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2974.1234567890123!2d-88.0123456!3d41.7890123!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDHCsDQ3JzIwLjQiTiA4OMKwMDAnNDQuNSJX!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus",
+  mapEmbedUrl:
+    "https://maps.google.com/maps?q=724+Bonded+Parkway,+Streamwood,+IL+60107&z=15&output=embed",
 };

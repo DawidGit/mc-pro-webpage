@@ -15,6 +15,7 @@ env:
   VPS_HOST: ${{ secrets.VPS_HOST }}
   VPS_USER: ${{ secrets.VPS_USER }}
   VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+  VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
 
 jobs:
   # -------------------------------------------------------------------------
@@ -36,6 +37,9 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+      
+      - name: Run unit tests
+        run: npm test
       
       - name: Run linter
         run: npm run lint
@@ -101,6 +105,13 @@ jobs:
             echo "Skipping VPS deploy: required secrets are missing."
           fi
 
+          # Optional; defaults to 22 when unset
+          if [ -n "${{ secrets.VPS_SSH_PORT }}" ]; then
+            echo "ssh_port=${{ secrets.VPS_SSH_PORT }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ssh_port=22" >> "$GITHUB_OUTPUT"
+          fi
+
           if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
             echo "can_notify=true" >> "$GITHUB_OUTPUT"
           else
@@ -117,12 +128,14 @@ jobs:
         if: steps.precheck.outputs.can_deploy == 'true'
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p ${{ steps.precheck.outputs.ssh_port }} -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
       
       - name: Deploy to VPS
         if: steps.precheck.outputs.can_deploy == 'true'
+        env:
+          SSH_PORT: ${{ steps.precheck.outputs.ssh_port }}
         run: |
-          echo "Starting deployment to ${{ secrets.VPS_HOST }}..."
+          echo "Starting deployment to ${{ secrets.VPS_HOST }}:${SSH_PORT}..."
           
           # Create deployment script
           cat > deploy.sh << 'EOF'
@@ -148,6 +161,7 @@ jobs:
           
           # Copy files to VPS
           rsync -avz --delete \
+            -e "ssh -p ${SSH_PORT} -o StrictHostKeyChecking=yes" \
             --exclude='node_modules' \
             --exclude='.git' \
             --exclude='dist' \
@@ -156,7 +170,7 @@ jobs:
             ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/${{ secrets.VPS_USER }}/apps/summit-website/
           
           # Execute deployment commands
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'DEPLOY'
+          ssh -p "${SSH_PORT}" ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'DEPLOY'
             cd /home/${{ secrets.VPS_USER }}/apps/summit-website
             
             echo "Building and starting containers..."

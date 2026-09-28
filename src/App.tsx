@@ -6,9 +6,11 @@ import { Services } from './sections/Services';
 import { WhyChooseMe } from './sections/WhyChooseMe';
 import { FeaturedProjects } from './sections/FeaturedProjects';
 import { Testimonials } from './sections/Testimonials';
+import { FAQ } from './sections/FAQ';
 import { Contact } from './sections/Contact';
 import { Footer } from './sections/Footer';
 import { siteConfig } from './config';
+import { SeoJsonLd } from './components/SeoJsonLd';
 import './App.css';
 
 function App() {
@@ -30,6 +32,8 @@ function App() {
 
   return (
     <main className="relative w-full overflow-x-hidden">
+      <SeoJsonLd />
+
       {/* Hero Section - Parallax Layering */}
       <Hero />
 
@@ -45,11 +49,14 @@ function App() {
       {/* Featured Projects - Dark Section */}
       <FeaturedProjects />
 
-      {/* Testimonials Carousel - White Section */}
+      {/* Testimonials - White Section */}
       <Testimonials />
 
       {/* Contact Section - Dark Section */}
       <Contact />
+
+      {/* FAQ / Common Questions — below contact */}
+      <FAQ />
 
       {/* Footer - White Section with Massive Typography */}
       <Footer />
