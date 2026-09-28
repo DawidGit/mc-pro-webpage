@@ -228,16 +228,14 @@ export function WhyChooseMe() {
   const splitCardsRow = showFeatureGrid && showStatsBlock;
 
   useLayoutEffect(() => {
-    if (!splitCardsRow) {
-      setStatsPanelHeightPx(null);
-      return;
-    }
+    if (!splitCardsRow) return;
 
     const statsEl = statsRef.current;
     if (!statsEl) return;
 
     const mq = window.matchMedia('(min-width: 1024px)');
     let cancelled = false;
+    let rafId = 0;
 
     const readHeight = () => {
       if (!statsEl.isConnected) return 0;
@@ -245,14 +243,18 @@ export function WhyChooseMe() {
     };
 
     const sync = () => {
-      if (cancelled || !mq.matches) {
-        if (!cancelled) setStatsPanelHeightPx(null);
-        return;
-      }
-      const h = readHeight();
-      if (h > 0) {
-        setStatsPanelHeightPx(Math.round(h));
-      }
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (cancelled) return;
+        if (!mq.matches) {
+          setStatsPanelHeightPx(null);
+          return;
+        }
+        const h = readHeight();
+        if (h > 0) {
+          setStatsPanelHeightPx(Math.round(h));
+        }
+      });
     };
 
     sync();
@@ -274,17 +276,19 @@ export function WhyChooseMe() {
 
     return () => {
       cancelled = true;
+      cancelAnimationFrame(rafId);
       ro.disconnect();
       mq.removeEventListener('change', sync);
       window.removeEventListener('resize', sync);
     };
-  }, [splitCardsRow, whyChooseMeConfig.stats.length]);
+  }, [splitCardsRow]);
 
   if (!hasWhyChooseMeContent) return null;
 
-  const lockFeatureHeight = splitCardsRow && statsPanelHeightPx != null;
+  const appliedStatsHeight = splitCardsRow ? statsPanelHeightPx : null;
+  const lockFeatureHeight = appliedStatsHeight != null;
   /** lg: collapse feature column until we know stats height — otherwise aspect-ratio cards inflate the row and skew measurement */
-  const collapseFeaturesForMeasure = splitCardsRow && statsPanelHeightPx == null;
+  const collapseFeaturesForMeasure = splitCardsRow && appliedStatsHeight == null;
 
   return (
     <section
@@ -317,8 +321,8 @@ export function WhyChooseMe() {
               : ''
           } ${lockFeatureHeight ? 'lg:grid-rows-[minmax(0,1fr)]' : ''}`}
           style={
-            lockFeatureHeight && statsPanelHeightPx != null
-              ? { height: statsPanelHeightPx }
+            lockFeatureHeight && appliedStatsHeight != null
+              ? { height: appliedStatsHeight }
               : undefined
           }
         >

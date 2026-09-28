@@ -34,7 +34,7 @@ export function IntroGrid() {
         .split(/\n\n+/)
         .map((para) => para.trim())
         .filter(Boolean),
-    [introGridConfig.description]
+    []
   );
 
   const collapseN = introGridConfig.descriptionCollapsedParagraphCount;
