@@ -136,30 +136,20 @@ jobs:
           SSH_PORT: ${{ steps.precheck.outputs.ssh_port }}
         run: |
           echo "Starting deployment to ${{ secrets.VPS_HOST }}:${SSH_PORT}..."
-          
-          # Create deployment script
-          cat > deploy.sh << 'EOF'
-          #!/bin/bash
-          set -e
-          
-          APP_DIR="/home/${{ secrets.VPS_USER }}/apps/summit-website"
+
+          APP_DIR="/home/${{ secrets.VPS_USER }}/mc-pro-website"
           BACKUP_DIR="/home/${{ secrets.VPS_USER }}/backups/$(date +%Y%m%d_%H%M%S)"
-          
-          echo "Creating backup..."
-          mkdir -p $BACKUP_DIR
-          if [ -d "$APP_DIR" ]; then
-            sudo cp -r $APP_DIR $BACKUP_DIR/ 2>/dev/null || true
-          fi
-          
-          echo "Ensuring directory structure..."
-          mkdir -p $APP_DIR
-          
-          echo "Deployment complete!"
-          EOF
-          
-          chmod +x deploy.sh
-          
-          # Copy files to VPS
+
+          # Ensure remote app directory exists before rsync
+          ssh -p "${SSH_PORT}" -o StrictHostKeyChecking=yes \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "mkdir -p '${APP_DIR}' '${BACKUP_DIR}'"
+
+          # Backup existing deploy (if any), then sync sources
+          ssh -p "${SSH_PORT}" -o StrictHostKeyChecking=yes \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "if [ -d '${APP_DIR}' ] && [ \"\$(ls -A '${APP_DIR}' 2>/dev/null)\" ]; then mkdir -p '${BACKUP_DIR}' && cp -a '${APP_DIR}/.' '${BACKUP_DIR}/' || true; fi"
+
           rsync -avz --delete \
             -e "ssh -p ${SSH_PORT} -o StrictHostKeyChecking=yes" \
             --exclude='node_modules' \
@@ -167,19 +157,21 @@ jobs:
             --exclude='dist' \
             --exclude='.env' \
             --exclude='*.log' \
-            ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/${{ secrets.VPS_USER }}/apps/summit-website/
-          
-          # Execute deployment commands
-          ssh -p "${SSH_PORT}" ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'DEPLOY'
-            cd /home/${{ secrets.VPS_USER }}/apps/summit-website
-            
+            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${APP_DIR}/"
+
+          # Build and start containers on VPS
+          ssh -p "${SSH_PORT}" -o StrictHostKeyChecking=yes \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" << DEPLOY
+            set -e
+            cd "${APP_DIR}"
+
             echo "Building and starting containers..."
             docker compose down
             docker compose up -d --build
-            
+
             echo "Waiting for container to be healthy..."
             sleep 10
-            
+
             echo "Checking health endpoint..."
             if curl -f http://localhost:8080/healthz; then
               echo "Deployment successful!"
@@ -188,7 +180,7 @@ jobs:
               docker compose logs --tail=50
               exit 1
             fi
-            
+
             echo "Cleaning up old Docker images..."
             docker system prune -f
           DEPLOY
