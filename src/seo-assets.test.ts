@@ -14,7 +14,7 @@ describe('static SEO assets', () => {
 
   it('ships sitemap.xml with the homepage URL', () => {
     const sitemap = readFileSync(resolve(root, 'public/sitemap.xml'), 'utf8');
-    expect(sitemap).toContain('https://mcprogc.com/');
+    expect(sitemap).toContain('https://mc-pro.dawidw.cloud/');
     expect(sitemap).toContain('<urlset');
   });
 
@@ -24,6 +24,6 @@ describe('static SEO assets', () => {
     expect(html).toContain('Streamwood');
     expect(html).toContain('geo.region');
     expect(html).toContain('application/ld+json');
-    expect(html).toContain('https://mcprogc.com/');
+    expect(html).toContain('https://mc-pro.dawidw.cloud/');
   });
 });

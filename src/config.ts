@@ -27,9 +27,9 @@ export const siteConfig: SiteConfig = {
   siteTitle: "MC Pro, INC. | General Contractor & Solid Surface Services in Streamwood, IL",
   siteDescription:
     "MC Pro, INC. is a Streamwood, Illinois general contractor offering design-build, pre-construction, construction management, and solid surface services across Chicagoland. Call (312) 405-0066.",
-  canonicalUrl: "https://mcprogc.com",
-  ogImage: "https://mcprogc.com/og-image.jpg",
-  logoUrl: "https://mcprogc.com/logo.png",
+  canonicalUrl: "https://mc-pro.dawidw.cloud",
+  ogImage: "https://mc-pro.dawidw.cloud/og-image.jpg",
+  logoUrl: "https://mc-pro.dawidw.cloud/logo.png",
   keywords:
     "general contractor Streamwood, MC Pro INC, solid surface Streamwood IL, commercial construction Chicago suburbs, design build Illinois, construction management Streamwood, residential remodeling Chicagoland, MCProGC",
   streetAddress: "724 Bonded Parkway",
@@ -38,7 +38,7 @@ export const siteConfig: SiteConfig = {
   postalCode: "60107",
   latitude: 42.0275,
   longitude: -88.1768,
-  sameAs: ["https://mcprogc.com"],
+  sameAs: ["https://mc-pro.dawidw.cloud", "https://mcprogc.com"],
 };
 
 const assetPath = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
