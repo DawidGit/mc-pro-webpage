@@ -16,6 +16,7 @@ describe('static SEO assets', () => {
     const sitemap = readFileSync(resolve(root, 'public/sitemap.xml'), 'utf8');
     expect(sitemap).toContain('https://mc-pro.dawidw.cloud/');
     expect(sitemap).toContain('<urlset');
+    expect(sitemap).not.toMatch(/#/);
   });
 
   it('has MC Pro title and geo meta in index.html', () => {
