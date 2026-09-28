@@ -9,7 +9,7 @@ describe('static SEO assets', () => {
     const robots = readFileSync(resolve(root, 'public/robots.txt'), 'utf8');
     expect(robots).toMatch(/User-agent:\s*\*/i);
     expect(robots).toMatch(/Allow:\s*\//i);
-    expect(robots).toMatch(/Sitemap:\s*https:\/\/mcprogc\.com\/sitemap\.xml/i);
+    expect(robots).toMatch(/Sitemap:\s*https:\/\/mc-pro\.dawidw\.cloud\/sitemap\.xml/i);
   });
 
   it('ships sitemap.xml with the homepage URL', () => {
