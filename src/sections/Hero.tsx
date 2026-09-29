@@ -199,7 +199,7 @@ export function Hero() {
           <img
             src={navLogoSrc}
             alt={heroConfig.brandName || 'Company logo'}
-            className="h-14 md:h-16 w-auto object-contain"
+            className="h-16 md:h-20 w-auto object-contain"
             loading="eager"
           />
         </div>
