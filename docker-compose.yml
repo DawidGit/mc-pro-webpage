@@ -50,9 +50,9 @@ services:
     expose:
       - "8080"
     
-    # Publish port to host for local browser access
+    # Publish port to host for local browser access (loopback only)
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8181:8080"
     
     # Health check
     healthcheck:
