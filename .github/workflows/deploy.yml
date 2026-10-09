@@ -144,7 +144,7 @@ jobs:
           sleep 10
 
           echo "Checking health endpoint..."
-          if curl -f http://localhost:8080/healthz; then
+          if curl -f http://localhost:8181/healthz; then
             echo "Deployment successful!"
           else
             echo "Health check failed!"
@@ -193,12 +193,12 @@ jobs:
           echo "Running smoke tests..."
 
           # Test main page
-          curl -f -o /dev/null -s -w "Main page: %{http_code}\n" http://${{ secrets.VPS_HOST }}:8080/
+          curl -f -o /dev/null -s -w "Main page: %{http_code}\n" https://mcprogc.com/
 
           # Test health endpoint
-          curl -f -s http://${{ secrets.VPS_HOST }}:8080/healthz
+          curl -f -s https://mcprogc.com/healthz
 
           # Test static assets
-          curl -f -o /dev/null -s -w "CSS: %{http_code}\n" http://${{ secrets.VPS_HOST }}:8080/assets/index.css || true
+          curl -f -o /dev/null -s -w "CSS: %{http_code}\n" https://mcprogc.com/assets/index.css || true
 
           echo "Smoke tests completed!"
