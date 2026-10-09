@@ -9,12 +9,12 @@ describe('static SEO assets', () => {
     const robots = readFileSync(resolve(root, 'public/robots.txt'), 'utf8');
     expect(robots).toMatch(/User-agent:\s*\*/i);
     expect(robots).toMatch(/Allow:\s*\//i);
-    expect(robots).toMatch(/Sitemap:\s*https:\/\/mcpro\.dawidw\.cloud\/sitemap\.xml/i);
+    expect(robots).toMatch(/Sitemap:\s*https:\/\/mcprogc\.com\/sitemap\.xml/i);
   });
 
   it('ships sitemap.xml with the homepage URL', () => {
     const sitemap = readFileSync(resolve(root, 'public/sitemap.xml'), 'utf8');
-    expect(sitemap).toContain('https://mcpro.dawidw.cloud/');
+    expect(sitemap).toContain('https://mcprogc.com/');
     expect(sitemap).toContain('<urlset');
     expect(sitemap).not.toMatch(/#/);
   });
@@ -25,6 +25,6 @@ describe('static SEO assets', () => {
     expect(html).toContain('Streamwood');
     expect(html).toContain('geo.region');
     expect(html).toContain('application/ld+json');
-    expect(html).toContain('https://mcpro.dawidw.cloud/');
+    expect(html).toContain('https://mcprogc.com/');
   });
 });
