@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mc-pro.dawidw.cloud/sitemap.xml
+Sitemap: https://mcpro.dawidw.cloud/sitemap.xml
