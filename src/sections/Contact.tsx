@@ -1,30 +1,80 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Phone, Mail, MapPin, Clock, Send, AlertCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, AlertCircle, ShieldCheck } from 'lucide-react';
 import { contactConfig } from '../config';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { submitToWeb3Forms, type ContactFormState } from '@/lib/contactFormService';
 
 gsap.registerPlugin(ScrollTrigger);
+
+// reCAPTCHA v3 types (script loaded on demand when a site key is configured)
+declare global {
+  interface Window {
+    grecaptcha?: {
+      ready: (callback: () => void) => void;
+      execute: (
+        siteKey: string,
+        options: { action: string }
+      ) => Promise<string>;
+    };
+  }
+}
+
+const RECAPTCHA_ACTION = 'contact';
+
+/** Resolves with a fresh reCAPTCHA v3 token, or null when captcha isn't configured. */
+async function getRecaptchaToken(siteKey: string): Promise<string | null> {
+  if (!siteKey || typeof window === 'undefined') return null;
+  if (!window.grecaptcha) {
+    // Script not loaded (yet) — proceed without token rather than blocking the user.
+    console.warn('reCAPTCHA script unavailable; submitting without token.');
+    return null;
+  }
+  try {
+    return await window.grecaptcha.execute(siteKey, { action: RECAPTCHA_ACTION });
+  } catch {
+    console.warn('reCAPTCHA execution failed; submitting without token.');
+    return null;
+  }
+}
+
+const EMPTY_FORM: ContactFormState = {
+  name: '',
+  email: '',
+  phone: '',
+  company: '',
+  projectType: '',
+  message: '',
+};
 
 export function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [formState, setFormState] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    company: '',
-    projectType: '',
-    message: '',
-  });
+  const [formState, setFormState] = useState<ContactFormState>(EMPTY_FORM);
+  const [botCheck, setBotCheck] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState('');
   const hasContactContent = Boolean(contactConfig.titleRegular);
+  const hasCaptcha = Boolean(contactConfig.recaptchaSiteKey);
+
+  // Load the reCAPTCHA v3 script only when a site key is configured.
+  useEffect(() => {
+    if (!hasCaptcha) return;
+    if (document.getElementById('recaptcha-v3-script')) return;
+
+    const script = document.createElement('script');
+    script.id = 'recaptcha-v3-script';
+    script.src = `https://www.google.com/recaptcha/api.js?render=${contactConfig.recaptchaSiteKey}`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  }, [hasCaptcha]);
 
   useEffect(() => {
     if (!hasContactContent) return;
@@ -80,24 +130,46 @@ export function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot filled → almost certainly a bot; pretend success and bail.
+    if (botCheck) {
+      setSubmitStatus('success');
+      setStatusMessage('Thank you! Your message has been sent successfully.');
+      return;
+    }
+
+    if (!contactConfig.web3formsAccessKey) {
+      setSubmitStatus('error');
+      setStatusMessage(
+        'The contact form is not configured yet. Please call (312) 405-0066 or email office@mcprogc.com.'
+      );
+      return;
+    }
+
     setIsSubmitting(true);
-    
-    // Simulate form submission - in production, this would call your API
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    setSubmitStatus('success');
-    setFormState({
-      name: '',
-      email: '',
-      phone: '',
-      company: '',
-      projectType: '',
-      message: '',
+    setSubmitStatus('idle');
+
+    const recaptchaToken = await getRecaptchaToken(contactConfig.recaptchaSiteKey);
+    const result = await submitToWeb3Forms(formState, {
+      accessKey: contactConfig.web3formsAccessKey,
+      recaptchaToken: recaptchaToken ?? undefined,
     });
 
-    // Reset success message after 5 seconds
-    setTimeout(() => setSubmitStatus('idle'), 5000);
+    setIsSubmitting(false);
+
+    if (result.ok) {
+      setSubmitStatus('success');
+      setStatusMessage('Thank you! Your message has been sent successfully.');
+      setFormState(EMPTY_FORM);
+    } else {
+      setSubmitStatus('error');
+      setStatusMessage(
+        `${result.message} You can also reach us at (312) 405-0066 or office@mcprogc.com.`
+      );
+    }
+
+    // Reset status message after 8 seconds
+    setTimeout(() => setSubmitStatus('idle'), 8000);
   };
 
   return (
@@ -333,12 +405,31 @@ export function Contact() {
                 />
               </div>
 
-              {/* CAPTCHA Placeholder - In production, integrate with Google reCAPTCHA or hCaptcha */}
+              {/* Honeypot spam trap — hidden from humans, bots tend to fill it */}
+              <input
+                type="checkbox"
+                name="botcheck"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                checked={botCheck}
+                onChange={e => setBotCheck(e.target.checked)}
+                className="hidden"
+                style={{ display: 'none' }}
+              />
+
+              {/* Spam protection info (reCAPTCHA v3 runs invisibly when configured) */}
               <div className="p-4 bg-forest-dark/50 rounded-lg border border-dashed border-white/20">
                 <div className="flex items-center gap-3 text-white/55">
-                  <AlertCircle className="w-5 h-5" strokeWidth={1.5} />
+                  {hasCaptcha ? (
+                    <ShieldCheck className="w-5 h-5" strokeWidth={1.5} />
+                  ) : (
+                    <AlertCircle className="w-5 h-5" strokeWidth={1.5} />
+                  )}
                   <span className="text-sm font-body">
-                    CAPTCHA verification will appear here in production
+                    {hasCaptcha
+                      ? 'This form is protected by invisible reCAPTCHA v3.'
+                      : 'This form is protected by a hidden spam filter.'}
                   </span>
                 </div>
               </div>
@@ -347,7 +438,7 @@ export function Contact() {
               {submitStatus === 'success' && (
                 <div className="p-4 bg-green-500/10 border border-green-300/25 rounded-lg">
                   <p className="text-green-100/90 font-body text-sm">
-                    Thank you! Your message has been sent successfully. We'll respond within 24 business hours.
+                    {statusMessage || "Thank you! Your message has been sent successfully. We'll respond within 24 business hours."}
                   </p>
                 </div>
               )}
@@ -355,7 +446,7 @@ export function Contact() {
               {submitStatus === 'error' && (
                 <div className="p-4 bg-red-500/10 border border-red-300/25 rounded-lg">
                   <p className="text-red-100/90 font-body text-sm">
-                    Something went wrong. Please try again or call us directly.
+                    {statusMessage || 'Something went wrong. Please try again or call us directly.'}
                   </p>
                 </div>
               )}

@@ -11,6 +11,10 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
+      args:
+        # Public build-time values (baked into the static bundle by Vite)
+        VITE_WEB3FORMS_ACCESS_KEY: ${VITE_WEB3FORMS_ACCESS_KEY:-}
+        VITE_RECAPTCHA_SITE_KEY: ${VITE_RECAPTCHA_SITE_KEY:-}
     container_name: mc-pro-website
     restart: unless-stopped
     
