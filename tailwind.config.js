@@ -5,9 +5,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Manrope', 'sans-serif'],
-        serif: ['Playfair Display', 'serif'],
-        body: ['DM Sans', 'sans-serif'],
+        sans: ['"Manrope Variable"', 'Manrope', 'sans-serif'],
+        serif: ['"Playfair Display Variable"', 'Playfair Display', 'serif'],
+        body: ['"DM Sans Variable"', 'DM Sans', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
