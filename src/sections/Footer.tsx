@@ -16,7 +16,7 @@ const iconMap: Record<string, LucideIcon> = {
 export function Footer() {
   const footerRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const footerLogoSrc = `${import.meta.env.BASE_URL}mc-pro-logo-footer.png`;
+  const footerLogoSrc = `${import.meta.env.BASE_URL}mc-pro-logo-footer.webp`;
   const hasFooterContent = Boolean(footerConfig.email) || footerConfig.navLinks.length > 0;
 
   useEffect(() => {

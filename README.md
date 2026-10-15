@@ -69,8 +69,8 @@ gc-illinois-site/
 │       └── deploy.yml          # GitHub Actions CI/CD
 ├── public/                     # Static assets
 │   ├── *.jpg                   # Project images
-│   ├── *.png                   # Hero and feature images
-│   └── favicon.svg             # Site favicon
+│   ├── *.png / *.webp / *.avif # Hero, logos and feature images
+│   └── favicon.png             # Site favicon
 ├── src/
 │   ├── sections/               # Page sections
 │   │   ├── Hero.tsx            # Hero with parallax

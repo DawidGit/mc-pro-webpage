@@ -27,7 +27,7 @@ export function Hero() {
   const isConstructionHero = heroConfig.heroImage.endsWith('/hero-construction2.png');
   const isBuildWithUsText = heroConfig.backgroundText === 'Build with us';
   const isTrustedContractorText = heroConfig.overlayText === 'Illinois Trusted General Contractor Since 2008';
-  const navLogoSrc = `${import.meta.env.BASE_URL}mc-pro-logo.png`;
+  const navLogoSrc = `${import.meta.env.BASE_URL}mc-pro-logo.webp`;
   const hasHeroContent = Boolean(heroConfig.backgroundText) || Boolean(heroConfig.heroImage) || heroConfig.navLinks.length > 0;
 
   useEffect(() => {
@@ -147,12 +147,33 @@ export function Hero() {
           ref={modelRef}
           className="absolute inset-0 z-[8] will-change-transform"
         >
-          <img
-            src={heroConfig.heroImage}
-            alt={heroConfig.heroImageAlt}
-            className="w-full h-full object-cover object-[center_40%]"
-            loading="eager"
-          />
+          <picture>
+            {isConstructionHero && (
+              <>
+                <source
+                  type="image/avif"
+                  srcSet={`${import.meta.env.BASE_URL}hero-construction2.avif`}
+                />
+                <source
+                  type="image/webp"
+                  srcSet={[
+                    `${import.meta.env.BASE_URL}hero-construction2-480.webp 480w`,
+                    `${import.meta.env.BASE_URL}hero-construction2-768.webp 768w`,
+                    `${import.meta.env.BASE_URL}hero-construction2-1280.webp 1280w`,
+                    `${import.meta.env.BASE_URL}hero-construction2-1920.webp 1920w`,
+                  ].join(', ')}
+                  sizes="100vw"
+                />
+              </>
+            )}
+            <img
+              src={heroConfig.heroImage}
+              alt={heroConfig.heroImageAlt}
+              className="w-full h-full object-cover object-[center_40%]"
+              loading="eager"
+              fetchPriority="high"
+            />
+          </picture>
         </div>
       )}
 
