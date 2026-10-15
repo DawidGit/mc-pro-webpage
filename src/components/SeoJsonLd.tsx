@@ -84,7 +84,7 @@ function buildGraph() {
           'Design-build construction',
           'Pre-construction planning',
           'Construction management',
-          'Solid surface installation',
+          'Kitchen and bathroom remodeling',
           'Commercial build-outs',
           'Residential remodeling',
         ],
