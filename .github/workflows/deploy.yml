@@ -113,7 +113,7 @@ jobs:
           APP_DIR: ${{ github.workspace }}
         run: |
           set -e
-          DEPLOY_DIR="$HOME/mc-pro-website"
+          DEPLOY_DIR="$HOME/mc-pro-web"
           BACKUP_DIR="$HOME/backups/$(date +%Y%m%d_%H%M%S)"
 
           echo "Deploying from runner workspace to ${DEPLOY_DIR}..."
