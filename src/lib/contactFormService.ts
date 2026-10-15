@@ -21,13 +21,13 @@ export interface Web3FormsPayload {
   company: string;
   projectType: string;
   message: string;
-  recaptcha_response?: string;
+  'h-captcha-response'?: string;
 }
 
 export interface BuildPayloadOptions {
   accessKey: string;
-  /** reCAPTCHA v3 token — only present when a site key is configured (Web3Forms Pro). */
-  recaptchaToken?: string;
+  /** hCaptcha token — Web3Forms verifies it server-side (supported on the free plan). */
+  captchaToken?: string;
 }
 
 export type SubmitResult =
@@ -35,6 +35,11 @@ export type SubmitResult =
   | { ok: false; message: string };
 
 export const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit';
+
+// Web3Forms shared hCaptcha site key — free plan, zero-config, verified
+// server-side by Web3Forms (no own keys needed).
+// https://docs.web3forms.com/customizations/spam-protection/hcaptcha
+export const HCAPTCHA_SITE_KEY = '50b2fe65-b00b-4b9e-ad62-3ba471098be2';
 
 const PROJECT_TYPE_LABELS: Record<string, string> = {
   retail: 'Retail Buildout',
@@ -67,8 +72,8 @@ export function buildWeb3FormsPayload(
     message: form.message,
   };
 
-  if (options.recaptchaToken) {
-    payload.recaptcha_response = options.recaptchaToken;
+  if (options.captchaToken) {
+    payload['h-captcha-response'] = options.captchaToken;
   }
 
   return payload;

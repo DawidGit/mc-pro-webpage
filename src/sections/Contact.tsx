@@ -1,46 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Phone, Mail, MapPin, Clock, Send, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, ShieldCheck } from 'lucide-react';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { contactConfig } from '../config';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { submitToWeb3Forms, type ContactFormState } from '@/lib/contactFormService';
+import {
+  submitToWeb3Forms,
+  HCAPTCHA_SITE_KEY,
+  type ContactFormState,
+} from '@/lib/contactFormService';
 
 gsap.registerPlugin(ScrollTrigger);
-
-// reCAPTCHA v3 types (script loaded on demand when a site key is configured)
-declare global {
-  interface Window {
-    grecaptcha?: {
-      ready: (callback: () => void) => void;
-      execute: (
-        siteKey: string,
-        options: { action: string }
-      ) => Promise<string>;
-    };
-  }
-}
-
-const RECAPTCHA_ACTION = 'contact';
-
-/** Resolves with a fresh reCAPTCHA v3 token, or null when captcha isn't configured. */
-async function getRecaptchaToken(siteKey: string): Promise<string | null> {
-  if (!siteKey || typeof window === 'undefined') return null;
-  if (!window.grecaptcha) {
-    // Script not loaded (yet) — proceed without token rather than blocking the user.
-    console.warn('reCAPTCHA script unavailable; submitting without token.');
-    return null;
-  }
-  try {
-    return await window.grecaptcha.execute(siteKey, { action: RECAPTCHA_ACTION });
-  } catch {
-    console.warn('reCAPTCHA execution failed; submitting without token.');
-    return null;
-  }
-}
 
 const EMPTY_FORM: ContactFormState = {
   name: '',
@@ -55,26 +29,14 @@ export function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const captchaRef = useRef<HCaptcha>(null);
   const [formState, setFormState] = useState<ContactFormState>(EMPTY_FORM);
   const [botCheck, setBotCheck] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
   const hasContactContent = Boolean(contactConfig.titleRegular);
-  const hasCaptcha = Boolean(contactConfig.recaptchaSiteKey);
-
-  // Load the reCAPTCHA v3 script only when a site key is configured.
-  useEffect(() => {
-    if (!hasCaptcha) return;
-    if (document.getElementById('recaptcha-v3-script')) return;
-
-    const script = document.createElement('script');
-    script.id = 'recaptcha-v3-script';
-    script.src = `https://www.google.com/recaptcha/api.js?render=${contactConfig.recaptchaSiteKey}`;
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-  }, [hasCaptcha]);
 
   useEffect(() => {
     if (!hasContactContent) return;
@@ -146,13 +108,20 @@ export function Contact() {
       return;
     }
 
+    // hCaptcha is interactive — require a solved challenge before sending.
+    if (!captchaToken) {
+      captchaRef.current?.execute();
+      setSubmitStatus('error');
+      setStatusMessage('Please complete the captcha verification above.');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    const recaptchaToken = await getRecaptchaToken(contactConfig.recaptchaSiteKey);
     const result = await submitToWeb3Forms(formState, {
       accessKey: contactConfig.web3formsAccessKey,
-      recaptchaToken: recaptchaToken ?? undefined,
+      captchaToken,
     });
 
     setIsSubmitting(false);
@@ -161,11 +130,17 @@ export function Contact() {
       setSubmitStatus('success');
       setStatusMessage('Thank you! Your message has been sent successfully.');
       setFormState(EMPTY_FORM);
+      // Reset hCaptcha for the next message.
+      setCaptchaToken('');
+      captchaRef.current?.resetCaptcha();
     } else {
       setSubmitStatus('error');
       setStatusMessage(
         `${result.message} You can also reach us at (312) 405-0066 or office@mcprogc.com.`
       );
+      // A consumed token can't be reused — get a fresh challenge.
+      setCaptchaToken('');
+      captchaRef.current?.resetCaptcha();
     }
 
     // Reset status message after 8 seconds
@@ -418,20 +393,21 @@ export function Contact() {
                 style={{ display: 'none' }}
               />
 
-              {/* Spam protection info (reCAPTCHA v3 runs invisibly when configured) */}
+              {/* Spam protection info */}
               <div className="p-4 bg-forest-dark/50 rounded-lg border border-dashed border-white/20">
-                <div className="flex items-center gap-3 text-white/55">
-                  {hasCaptcha ? (
-                    <ShieldCheck className="w-5 h-5" strokeWidth={1.5} />
-                  ) : (
-                    <AlertCircle className="w-5 h-5" strokeWidth={1.5} />
-                  )}
+                <div className="flex items-center gap-3 text-white/55 mb-4">
+                  <ShieldCheck className="w-5 h-5" strokeWidth={1.5} />
                   <span className="text-sm font-body">
-                    {hasCaptcha
-                      ? 'This form is protected by invisible reCAPTCHA v3.'
-                      : 'This form is protected by a hidden spam filter.'}
+                    This form is protected by hCaptcha to prevent spam.
                   </span>
                 </div>
+                <HCaptcha
+                  ref={captchaRef}
+                  sitekey={HCAPTCHA_SITE_KEY}
+                  theme="dark"
+                  onVerify={setCaptchaToken}
+                  onExpire={() => setCaptchaToken('')}
+                />
               </div>
 
               {/* Status Messages */}

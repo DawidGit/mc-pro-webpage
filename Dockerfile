@@ -12,11 +12,10 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 
 # Vite build-time variables (passed via docker compose / build args).
-# Web3Forms access key + reCAPTCHA v3 site key (public values, safe to bake in).
+# Web3Forms access key (public value, safe to bake in; hCaptcha uses a
+# shared Web3Forms site key, no extra configuration needed).
 ARG VITE_WEB3FORMS_ACCESS_KEY=""
-ARG VITE_RECAPTCHA_SITE_KEY=""
 ENV VITE_WEB3FORMS_ACCESS_KEY=$VITE_WEB3FORMS_ACCESS_KEY
-ENV VITE_RECAPTCHA_SITE_KEY=$VITE_RECAPTCHA_SITE_KEY
 
 # Install dependencies first (better layer caching)
 COPY package*.json ./
