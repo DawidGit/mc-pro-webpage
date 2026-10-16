@@ -2,15 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Phone, Mail, MapPin, Clock, Send, ShieldCheck } from 'lucide-react';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { contactConfig } from '../config';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Turnstile } from '@/components/Turnstile';
 import {
-  submitToWeb3Forms,
-  HCAPTCHA_SITE_KEY,
+  submitContactForm,
   type ContactFormState,
 } from '@/lib/contactFormService';
 
@@ -29,10 +28,10 @@ export function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const captchaRef = useRef<HCaptcha>(null);
   const [formState, setFormState] = useState<ContactFormState>(EMPTY_FORM);
   const [botCheck, setBotCheck] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
@@ -100,17 +99,8 @@ export function Contact() {
       return;
     }
 
-    if (!contactConfig.web3formsAccessKey) {
-      setSubmitStatus('error');
-      setStatusMessage(
-        'The contact form is not configured yet. Please call (312) 405-0066 or email office@mcprogc.com.'
-      );
-      return;
-    }
-
-    // hCaptcha is interactive — require a solved challenge before sending.
+    // Turnstile may solve itself invisibly — require a token before sending.
     if (!captchaToken) {
-      captchaRef.current?.execute();
       setSubmitStatus('error');
       setStatusMessage('Please complete the captcha verification above.');
       return;
@@ -119,10 +109,7 @@ export function Contact() {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    const result = await submitToWeb3Forms(formState, {
-      accessKey: contactConfig.web3formsAccessKey,
-      captchaToken,
-    });
+    const result = await submitContactForm(formState, captchaToken);
 
     setIsSubmitting(false);
 
@@ -130,9 +117,9 @@ export function Contact() {
       setSubmitStatus('success');
       setStatusMessage('Thank you! Your message has been sent successfully.');
       setFormState(EMPTY_FORM);
-      // Reset hCaptcha for the next message.
+      // Reset Turnstile for the next message.
       setCaptchaToken('');
-      captchaRef.current?.resetCaptcha();
+      setCaptchaResetSignal(s => s + 1);
     } else {
       setSubmitStatus('error');
       setStatusMessage(
@@ -140,7 +127,7 @@ export function Contact() {
       );
       // A consumed token can't be reused — get a fresh challenge.
       setCaptchaToken('');
-      captchaRef.current?.resetCaptcha();
+      setCaptchaResetSignal(s => s + 1);
     }
 
     // Reset status message after 8 seconds
@@ -398,15 +385,15 @@ export function Contact() {
                 <div className="flex items-center gap-3 text-white/55 mb-4">
                   <ShieldCheck className="w-5 h-5" strokeWidth={1.5} />
                   <span className="text-sm font-body">
-                    This form is protected by hCaptcha to prevent spam.
+                    This form is protected by Cloudflare Turnstile to prevent spam.
                   </span>
                 </div>
-                <HCaptcha
-                  ref={captchaRef}
-                  sitekey={HCAPTCHA_SITE_KEY}
+                <Turnstile
+                  siteKey={contactConfig.turnstileSiteKey}
                   theme="dark"
                   onVerify={setCaptchaToken}
                   onExpire={() => setCaptchaToken('')}
+                  resetSignal={captchaResetSignal}
                 />
               </div>
 

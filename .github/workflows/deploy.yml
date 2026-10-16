@@ -140,11 +140,11 @@ jobs:
           docker compose down
           docker compose up -d --build
 
-          echo "Waiting for container to be healthy..."
+          echo "Waiting for containers to be healthy..."
           sleep 10
 
-          echo "Checking health endpoint..."
-          if curl -f http://localhost:8181/healthz; then
+          echo "Checking health endpoints..."
+          if curl -f http://localhost:8181/healthz && curl -f http://localhost:8181/api/healthz; then
             echo "Deployment successful!"
           else
             echo "Health check failed!"
@@ -200,5 +200,8 @@ jobs:
 
           # Test static assets
           curl -f -o /dev/null -s -w "CSS: %{http_code}\n" https://mcprogc.com/assets/index.css || true
+
+          # Test contact API health (proxied through nginx)
+          curl -f -s https://mcprogc.com/api/healthz
 
           echo "Smoke tests completed!"

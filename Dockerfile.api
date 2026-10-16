@@ -1,0 +1,53 @@
+# =============================================================================
+# Dockerfile - Contact Form API (Express + TypeScript)
+# Multi-stage production build
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Build Environment
+# -----------------------------------------------------------------------------
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies first (better layer caching)
+COPY server/package*.json ./
+RUN npm ci --silent
+
+# Copy source code and build
+COPY server/tsconfig.json ./
+COPY server/src ./src
+RUN npm run build
+
+# -----------------------------------------------------------------------------
+# Stage 2: Production Environment
+# -----------------------------------------------------------------------------
+FROM node:24-alpine AS production
+
+# Install security updates
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache ca-certificates && \
+    rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Install production dependencies only
+COPY server/package*.json ./
+RUN npm ci --omit=dev --silent && npm cache clean --force
+
+# Copy compiled output from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Run as non-root user
+RUN chown -R node:node /app
+USER node
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget -q -O /dev/null http://localhost:3000/healthz || exit 1
+
+CMD ["node", "dist/index.js"]

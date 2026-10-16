@@ -12,10 +12,10 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 
 # Vite build-time variables (passed via docker compose / build args).
-# Web3Forms access key (public value, safe to bake in; hCaptcha uses a
-# shared Web3Forms site key, no extra configuration needed).
-ARG VITE_WEB3FORMS_ACCESS_KEY=""
-ENV VITE_WEB3FORMS_ACCESS_KEY=$VITE_WEB3FORMS_ACCESS_KEY
+# Cloudflare Turnstile site key (public value, safe to bake in; the matching
+# SECRET key lives only in the contact-api container environment).
+ARG VITE_TURNSTILE_SITE_KEY=""
+ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
 
 # Install dependencies first (better layer caching)
 COPY package*.json ./

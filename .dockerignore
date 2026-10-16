@@ -1,0 +1,35 @@
+# Dependencies (installed inside the image)
+node_modules/
+server/node_modules/
+
+# Build outputs
+dist/
+server/dist/
+
+# Environment variables (secrets — never enter the image)
+.env
+.env.local
+.env.*.local
+
+# Git & CI
+.git/
+.github/
+.gitignore
+
+# Editor / OS files
+.vscode/
+.idea/
+.cursor/
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+
+# Docs & non-runtime files
+*.md
+coverage/

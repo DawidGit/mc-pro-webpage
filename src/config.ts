@@ -535,8 +535,8 @@ export interface ContactConfig {
   formTitle: string;
   formDescription: string;
   mapEmbedUrl: string;
-  /** Web3Forms access key — created at https://web3forms.com (email: office@mcprogc.com). Empty until configured. */
-  web3formsAccessKey: string;
+  /** Cloudflare Turnstile site key (public) — create at https://dash.cloudflare.com → Turnstile. */
+  turnstileSiteKey: string;
 }
 
 export const contactConfig: ContactConfig = {
@@ -557,5 +557,5 @@ export const contactConfig: ContactConfig = {
   formDescription: "Fill out the form below and our team will respond within 24 business hours.",
   mapEmbedUrl:
     "https://maps.google.com/maps?q=724+Bonded+Parkway,+Streamwood,+IL+60107&z=15&output=embed",
-  web3formsAccessKey: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY ?? "",
+  turnstileSiteKey: import.meta.env.VITE_TURNSTILE_SITE_KEY ?? "",
 };

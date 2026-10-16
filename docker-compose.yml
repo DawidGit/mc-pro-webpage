@@ -13,7 +13,7 @@ services:
       target: production
       args:
         # Public build-time value (baked into the static bundle by Vite)
-        VITE_WEB3FORMS_ACCESS_KEY: ${VITE_WEB3FORMS_ACCESS_KEY:-}
+        VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY:-}
     container_name: mc-pro-website
     restart: unless-stopped
     
@@ -60,6 +60,63 @@ services:
     # Health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ---------------------------------------------------------------------------
+  # Contact Form API (Express + TypeScript)
+  # Verifies Cloudflare Turnstile tokens and delivers email via SMTP
+  # ---------------------------------------------------------------------------
+  contact-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: mc-pro-contact-api
+    restart: unless-stopped
+
+    # Environment variables (secrets — never baked into any bundle)
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - MAIL_FROM=${MAIL_FROM:-}
+      - MAIL_TO=${MAIL_TO:-office@mcprogc.com}
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service_name,environment"
+
+    # Networks
+    networks:
+      - mc-pro-network
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:3000/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
