@@ -12,6 +12,7 @@ import {
   submitContactForm,
   type ContactFormState,
 } from '@/lib/contactFormService';
+import { formatPhoneNumber } from '@/lib/phoneFormat';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -93,6 +94,11 @@ export function Contact() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    // Phone auto-formats to (xxx) xxx-xxxx as the user types.
+    if (name === 'phone') {
+      setFormState(prev => ({ ...prev, phone: formatPhoneNumber(value) }));
+      return;
+    }
     setFormState(prev => ({ ...prev, [name]: value }));
   };
 
