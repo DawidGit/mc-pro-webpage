@@ -55,7 +55,9 @@ export function createApp(deps: AppDependencies): Express {
     res.json({ ok: true });
   });
 
-  app.post('/api/contact', (req: Request, res: Response) => {
+  // Route is '/contact' — nginx strips the public '/api/' prefix
+  // (/api/contact → /contact) before proxying here.
+  app.post('/contact', (req: Request, res: Response) => {
     // 0) Only JSON submissions are accepted.
     const contentType = req.headers['content-type'] ?? '';
     if (!contentType.includes('application/json')) {

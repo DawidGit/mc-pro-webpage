@@ -49,7 +49,7 @@ describe('POST /api/contact', () => {
     const deps = makeDeps();
     await startApp(deps);
 
-    const res = await fetch(`${baseUrl}/api/contact`, {
+    const res = await fetch(`${baseUrl}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validBody),
@@ -74,7 +74,7 @@ describe('POST /api/contact', () => {
     const deps = makeDeps();
     await startApp(deps);
 
-    const res = await fetch(`${baseUrl}/api/contact`, {
+    const res = await fetch(`${baseUrl}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...validBody, 'cf-turnstile-response': '' }),
@@ -92,7 +92,7 @@ describe('POST /api/contact', () => {
     });
     await startApp(deps);
 
-    const res = await fetch(`${baseUrl}/api/contact`, {
+    const res = await fetch(`${baseUrl}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validBody),
@@ -108,7 +108,7 @@ describe('POST /api/contact', () => {
     });
     await startApp(deps);
 
-    const res = await fetch(`${baseUrl}/api/contact`, {
+    const res = await fetch(`${baseUrl}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validBody),
@@ -123,14 +123,14 @@ describe('POST /api/contact', () => {
     });
     await startApp(deps);
 
-    const first = await fetch(`${baseUrl}/api/contact`, {
+    const first = await fetch(`${baseUrl}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validBody),
     });
     expect(first.status).toBe(200);
 
-    const second = await fetch(`${baseUrl}/api/contact`, {
+    const second = await fetch(`${baseUrl}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validBody),
@@ -143,7 +143,7 @@ describe('POST /api/contact', () => {
     const deps = makeDeps();
     await startApp(deps);
 
-    const res = await fetch(`${baseUrl}/api/contact`, {
+    const res = await fetch(`${baseUrl}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...validBody, botcheck: 'on' }),
@@ -157,7 +157,7 @@ describe('POST /api/contact', () => {
     const deps = makeDeps();
     await startApp(deps);
 
-    const res = await fetch(`${baseUrl}/api/contact`, {
+    const res = await fetch(`${baseUrl}/contact`, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: 'hello',
@@ -170,7 +170,7 @@ describe('POST /api/contact', () => {
     const deps = makeDeps();
     await startApp(deps);
 
-    const res = await fetch(`${baseUrl}/api/unknown`);
+    const res = await fetch(`${baseUrl}/unknown`);
     expect(res.status).toBe(404);
   });
 
