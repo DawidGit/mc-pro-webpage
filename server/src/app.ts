@@ -8,11 +8,24 @@ export interface SendMailResult {
   ok: boolean;
 }
 
+/** Extra SMTP headers for automation/filtering (e.g. Gmail filters, IMAP). */
+export interface MailHeaders {
+  'X-Contact-Form': string;
+  'X-Project-Type': string;
+  'Auto-Submitted': string;
+}
+
 export interface AppDependencies {
   /** Cloudflare Turnstile secret key (server-side only). */
   turnstileSecret: string;
   verifyTurnstile: (token: string, secret: string, remoteIp?: string) => Promise<TurnstileResult>;
-  sendMail: (subject: string, text: string, html: string, replyTo: string) => Promise<SendMailResult>;
+  sendMail: (
+    subject: string,
+    text: string,
+    html: string,
+    replyTo: string,
+    headers: MailHeaders
+  ) => Promise<SendMailResult>;
   rateLimiter: RateLimiter;
 }
 
@@ -87,7 +100,18 @@ export function createApp(deps: AppDependencies): Express {
 
       // 5) Build and send the email.
       const email = buildContactEmail(parsed.data);
-      const sent = await deps.sendMail(email.subject, email.text, email.html, parsed.data.email);
+      const headers: MailHeaders = {
+        'X-Contact-Form': 'mcprogc.com',
+        'X-Project-Type': parsed.data.projectType || 'unspecified',
+        'Auto-Submitted': 'auto-generated',
+      };
+      const sent = await deps.sendMail(
+        email.subject,
+        email.text,
+        email.html,
+        parsed.data.email,
+        headers
+      );
       if (!sent.ok) {
         jsonError(res, 503, 'Message delivery failed. Please try again or call us directly.');
         return;

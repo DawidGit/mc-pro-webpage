@@ -11,10 +11,9 @@ const validForm = {
 };
 
 describe('buildContactEmail', () => {
-  it('renders subject with the sender name', () => {
+  it('renders subject with the stable automation prefix and sender name', () => {
     const { subject } = buildContactEmail(validForm);
-    expect(subject).toContain('Dawid Widulinski');
-    expect(subject).toContain('MC Pro');
+    expect(subject).toBe('[MC Pro Website] Consultation request — Dawid Widulinski');
   });
 
   it('renders a text body containing every field', () => {

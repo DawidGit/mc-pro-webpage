@@ -43,7 +43,8 @@ export interface RenderedEmail {
 export function buildContactEmail(data: ContactEmailData): RenderedEmail {
   const label = projectTypeLabel(data.projectType);
 
-  const subject = `MC Pro website — consultation request from ${data.name}`;
+  // Stable prefix for mail filters/automation; name for human scanning.
+  const subject = `[MC Pro Website] Consultation request — ${data.name}`;
 
   const text = [
     'New consultation request from the MC Pro website contact form.',

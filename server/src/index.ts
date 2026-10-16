@@ -1,8 +1,8 @@
-import nodemailer from 'nodemailer';
-import { createApp, type AppDependencies, type SendMailResult } from './app.js';
+import nodemailer, { type SentMessageInfo } from 'nodemailer';
+import { createApp, type AppDependencies, type MailHeaders, type SendMailResult } from './app.js';
 import { verifyTurnstileToken } from './turnstile.js';
 import { createRateLimiter } from './rateLimiter.js';
-import { createDevTransporter, type MailTransport } from './devTransport.js';
+import { createDevTransporter, type MailMessage, type MailTransport } from './devTransport.js';
 
 interface ServerEnv {
   port: number;
@@ -42,12 +42,27 @@ function createTransporter(env: ServerEnv): MailTransport {
     console.warn('SMTP_PASS is empty — running in DEV mode (emails are logged, not sent).');
     return createDevTransporter();
   }
-  return nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     host: env.smtpHost,
     port: env.smtpPort,
     secure: env.smtpPort === 465,
     auth: { user: env.smtpUser, pass: env.smtpPass },
   });
+  // Adapter: nodemailer's callback-style overloads → our MailTransport shape.
+  return {
+    async sendMail(mail: MailMessage) {
+      const info: SentMessageInfo = await transporter.sendMail({
+        from: mail.from,
+        to: mail.to,
+        replyTo: mail.replyTo,
+        subject: mail.subject,
+        text: mail.text,
+        html: mail.html,
+        headers: mail.headers as Record<string, string> | undefined,
+      });
+      return { messageId: info.messageId };
+    },
+  };
 }
 
 function main(): void {
@@ -58,24 +73,26 @@ function main(): void {
     subject: string,
     text: string,
     html: string,
-    replyTo: string
+    replyTo: string,
+    headers: MailHeaders
   ): Promise<SendMailResult> => {
     try {
       await transporter.sendMail({
-        from: env.mailFrom,
+        // Display name is filter-friendly: Gmail filter "from:MC Pro Website".
+        from: `MC Pro Website <${env.mailFrom}>`,
         to: env.mailTo,
         replyTo,
         subject,
         text,
         html,
+        headers,
       });
       return { ok: true };
     } catch (error) {
       console.error('Email delivery failed:', error);
       return { ok: false };
     }
-  };
-  const deps: AppDependencies = {
+  };  const deps: AppDependencies = {
     turnstileSecret: env.turnstileSecret,
     verifyTurnstile: verifyTurnstileToken,
     sendMail,

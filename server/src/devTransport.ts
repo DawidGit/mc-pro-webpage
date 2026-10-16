@@ -3,6 +3,8 @@
  * Used when SMTP_PASS is empty (local development).
  */
 
+import type { MailHeaders } from './app.js';
+
 export interface MailMessage {
   to: string;
   from: string;
@@ -10,6 +12,7 @@ export interface MailMessage {
   subject: string;
   text: string;
   html: string;
+  headers?: MailHeaders;
 }
 
 export interface MailTransport {
@@ -24,6 +27,11 @@ export function createDevTransporter(): MailTransport {
       console.log(`From:    ${mail.from}`);
       console.log(`ReplyTo: ${mail.replyTo}`);
       console.log(`Subject: ${mail.subject}`);
+      if (mail.headers) {
+        for (const [key, value] of Object.entries(mail.headers)) {
+          console.log(`${key}: ${value}`);
+        }
+      }
       console.log('──────────────────────── TEXT ────────────────────────────');
       console.log(mail.text);
       console.log('──────────────────────────────────────────────────────────');

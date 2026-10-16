@@ -59,6 +59,15 @@ describe('POST /api/contact', () => {
     const data = await res.json();
     expect(data.ok).toBe(true);
     expect(deps.sendMail).toHaveBeenCalledOnce();
+
+    // Automation-friendly subject, sender name, and headers.
+    const [subject, _text, _html, _replyTo, headers] = vi.mocked(deps.sendMail).mock.calls[0];
+    expect(subject).toBe('[MC Pro Website] Consultation request — Dawid Widulinski');
+    expect(headers).toEqual({
+      'X-Contact-Form': 'mcprogc.com',
+      'X-Project-Type': 'retail',
+      'Auto-Submitted': 'auto-generated',
+    });
   });
 
   it('returns 400 for invalid input (missing turnstile token)', async () => {
