@@ -36,6 +36,7 @@ export function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
   const [formState, setFormState] = useState<ContactFormState>(EMPTY_FORM);
   const [botCheck, setBotCheck] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
@@ -109,6 +110,27 @@ export function Contact() {
     if (botCheck) {
       setSubmitStatus('success');
       setStatusMessage('Thank you! Your message has been sent successfully.');
+      return;
+    }
+
+    // Project Details must be at least 10 chars — same rule the server
+    // enforces. React controlled inputs reset the native dirty flag, so
+    // minLength alone never triggers; we surface it as the same native
+    // popup via setCustomValidity before anything is sent.
+    const details = formState.message.trim();
+    if (details.length < 10) {
+      const el = messageRef.current;
+      if (el) {
+        el.setCustomValidity(
+          'Please describe your project in at least 10 characters.'
+        );
+        el.reportValidity();
+        el.addEventListener(
+          'input',
+          () => el.setCustomValidity(''),
+          { once: true }
+        );
+      }
       return;
     }
 
@@ -289,6 +311,7 @@ export function Contact() {
                     name="name"
                     type="text"
                     required
+                    maxLength={100}
                     value={formState.name}
                     onChange={handleInputChange}
                     placeholder="John Smith"
@@ -304,6 +327,7 @@ export function Contact() {
                     name="email"
                     type="email"
                     required
+                    maxLength={200}
                     value={formState.email}
                     onChange={handleInputChange}
                     placeholder="john@company.com"
@@ -337,6 +361,7 @@ export function Contact() {
                     id="company"
                     name="company"
                     type="text"
+                    maxLength={120}
                     value={formState.company}
                     onChange={handleInputChange}
                     placeholder="Your Company LLC"
@@ -374,6 +399,9 @@ export function Contact() {
                   id="message"
                   name="message"
                   required
+                  minLength={10}
+                  maxLength={5000}
+                  ref={messageRef}
                   value={formState.message}
                   onChange={handleInputChange}
                   placeholder="Tell us about your project timeline, budget range, and any specific requirements..."
