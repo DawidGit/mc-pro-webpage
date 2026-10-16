@@ -8,7 +8,19 @@ export const contactFormSchema = z
   .object({
     name: z.string().trim().min(1).max(100),
     email: z.string().trim().email().max(200),
-    phone: z.string().trim().max(30).default(''),
+    phone: z
+      .string()
+      .trim()
+      .max(30)
+      // Optional, but if given must be a plausible phone number
+      // (7–15 digits, optional leading +, separators allowed).
+      .refine(
+        (value) =>
+          value === '' ||
+          (/^\+?[\d\s().-]{7,20}$/.test(value) && value.replace(/\D/g, '').length >= 7),
+        { message: 'Invalid phone number.' }
+      )
+      .default(''),
     company: z.string().trim().max(120).default(''),
     projectType: z
       .enum(['retail', 'office', 'industrial', 'medical', 'restaurant', 'other', ''])

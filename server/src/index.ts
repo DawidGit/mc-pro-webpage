@@ -31,7 +31,7 @@ function readEnv(): ServerEnv {
     smtpUser: process.env.SMTP_USER!,
     // Empty in dev mode → emails are logged instead of sent.
     smtpPass: process.env.SMTP_PASS ?? '',
-    mailFrom: process.env.MAIL_FROM ?? process.env.SMTP_USER!,
+    mailFrom: process.env.MAIL_FROM || process.env.SMTP_USER!,
     mailTo: process.env.MAIL_TO!,
   };
 }
@@ -78,8 +78,8 @@ function main(): void {
   ): Promise<SendMailResult> => {
     try {
       await transporter.sendMail({
-        // Display name is filter-friendly: Gmail filter "from:MC Pro Website".
-        from: `MC Pro Website <${env.mailFrom}>`,
+        // Display name is filter-friendly: Gmail filter "from:Consultation Request".
+        from: `Consultation Request <${env.mailFrom}>`,
         to: env.mailTo,
         replyTo,
         subject,

@@ -24,6 +24,13 @@ const EMPTY_FORM: ContactFormState = {
   message: '',
 };
 
+// 10-digit US phone with optional +1 country code; separators: spaces,
+// dashes, dots, parentheses. Mirrors the server-side Zod validation.
+// NOTE: the dash inside character classes is escaped — Chrome validates
+// `pattern` with the strict v-flag, where a bare `-` fails to compile
+// (and a non-compiling pattern is silently ignored).
+const PHONE_PATTERN = '\\+?1?[\\s.\\-]?\\(?\\d{3}\\)?[\\s.\\-]?\\d{3}[\\s.\\-]?\\d{4}';
+
 export function Contact() {
   const sectionRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
@@ -311,6 +318,8 @@ export function Contact() {
                     value={formState.phone}
                     onChange={handleInputChange}
                     placeholder="(312) 405-0066"
+                    pattern={PHONE_PATTERN}
+                    title="Please enter a valid phone number, e.g. (312) 405-0066."
                     className="bg-forest-dark/60 border-white/15 text-white placeholder:text-white/40 focus:border-white/35 focus:ring-white/20"
                   />
                 </div>

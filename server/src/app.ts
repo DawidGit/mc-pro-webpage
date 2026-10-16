@@ -30,11 +30,8 @@ export interface AppDependencies {
 }
 
 function clientIp(req: Request): string {
-  // Behind nginx reverse proxy — trust X-Forwarded-For set by our own proxy.
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.length > 0) {
-    return forwarded.split(',')[0].trim();
-  }
+  // Exactly one trusted proxy hop (nginx) — req.ip resolves the address
+  // nginx saw, ignoring client-supplied X-Forwarded-For spoofing.
   return req.ip ?? 'unknown';
 }
 
@@ -46,7 +43,7 @@ export function createApp(deps: AppDependencies): Express {
   const app = express();
 
   app.disable('x-powered-by');
-  app.set('trust proxy', true);
+  app.set('trust proxy', 1);
 
   // Only accept JSON bodies of a sane size.
   app.use(express.json({ limit: '64kb' }));

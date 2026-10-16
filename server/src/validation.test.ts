@@ -31,6 +31,22 @@ describe('contactFormSchema', () => {
     expect(result.success).toBe(false);
   });
 
+  it('rejects an invalid phone number', () => {
+    const result = contactFormSchema.safeParse({
+      ...validInput,
+      phone: 'not-a-phone',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts common phone number formats', () => {
+    const formats = ['(312) 405-0066', '312-405-0066', '312.405.0066', '3124050066', '+1 312 405 0066'];
+    for (const phone of formats) {
+      const result = contactFormSchema.safeParse({ ...validInput, phone });
+      expect(result.success).toBe(true);
+    }
+  });
+
   it('rejects a missing name', () => {
     const result = contactFormSchema.safeParse({ ...validInput, name: '' });
     expect(result.success).toBe(false);
